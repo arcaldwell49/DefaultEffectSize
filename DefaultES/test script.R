@@ -51,15 +51,16 @@ SMD <- function(data, indices) {
   sd_av = (sd_pre+sd_post)/2
   m_diff = mean(d$diff, na.rm = TRUE)
   sd_diff = sd(d$diff, na.rm = TRUE)
-  cor_prepost = .5 #cor(d$pre,d$post,
-                #    method = "pearson")
+  cor_prepost = cor(d$pre,d$post,
+                    method = "pearson")
   dz = m_diff/sd_diff
   dav = m_diff/sd_av
   glass = m_diff/sd_pre
-  drm = 1 #m_diff/sqrt((sd_pre^2+sd_post^2)-(2*cor_prepost*sd_pre*sd_post))*sqrt(2*(1-cor_prepost))
+  drm = m_diff/sqrt((sd_pre^2+sd_post^2)-(2*cor_prepost*sd_pre*sd_post))*sqrt(2*(1-cor_prepost))
   CLES = pnorm(dz)
-  SMD_list = c(dz,drm,dav,glass,CLES)
+  result = c(dz,drm,dav,glass,CLES)
   
 } 
 
 raw_boot = boot(df_raw, SMD, R = 2000)
+dz_raw = boot.ci(raw_boot, type="bca", index=1)
