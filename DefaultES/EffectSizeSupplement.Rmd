@@ -1,0 +1,210 @@
+---
+title: "How to Calculate and Report Effect Sizes"
+subtitle: "An implementation in R"
+author: "Aaron R. Caldwell"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_html: default
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: refs.bib
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+```
+
+# Introduction
+
+In our manuscript we have argued that sport and exercise scientists should avoid the temptation of reporting a "default" effect size. Instead we suggested that the effect size be chosen on a case-by-case basis and reported in a way that helps communicate the results appropriately. With that said, we realize many sport scientists may not know how to calculate these effect sizes in a efficient manner. Therefore, we have written this document to show how [@R-base] can be used to produce these analyses.
+
+## Loading the Right Tools
+
+None of the following packages are 'necessary', and all of these analyses can be performed in 'base' R. But, I use these packages to make the analysis pipeline simpler and a little 'cleaner' too. In total, I need the tidyverse [@tidyverse], boot [@boot], broom [@broom], and MASS [@MASS]. You will likely not need MASS or broom for your own analyses, but it is necessary for this document in order to create a simulated dataset (MASS) and make the tables in the document (broom).
+
+```{r message=FALSE, warning=FALSE}
+#LOAD PACKAGES
+library(tidyverse) 
+library(boot) 
+library(MASS) 
+library(broom)
+```
+
+# Generate Some Data
+
+Okay, now I can generate data we similar to what we used in the manuscipt. First, let us create the "Interpretatable Raw Differences" example. In this example, we have a pre-to-post design of athletes where we are measuring $\dot{V}O_2$ (L$\cdot$min\textsuperscript{-1}). Further, we assume we are sampling from a population wherein the standard deviation of 0.2, correlation pre/post of .9, and a mean increase of .3 (L$\cdot$min\textsuperscript{-1}).
+
+```{r raw-diff-data, warnings=FALSE, message=FALSE}
+set.seed(20200303)
+var_raw = .2^2
+cor_raw = matrix(c(1,.8,.8,1),nrow=2)
+Sigma_raw = cor_raw*var_raw
+df_raw = mvrnorm(
+  n = 10,
+  Sigma = Sigma_raw,
+  mu = c(3.9, 4.1)
+  ) %>% 
+  as.data.frame() %>%
+  rename(pre = V1,
+         post = V2)
+
+#Add a change score column
+df_raw = df_raw %>% mutate(pre = round(pre,2),
+                           post = round(post,2)) %>%
+  mutate(diff = post-pre)
+
+```
+
+```{r echo=FALSE}
+knitr::kable(df_raw, caption="Raw Differences Data")
+```
+
+Now, we want to create "Uninterpretable Raw Differences" dataset. This time we are creating a dummy dataset of VAS scores with 30 'point' reduction, with a standard deviation of 25, and correlation of .7.
+
+```{r stan-diff-data, warnings=FALSE, message=FALSE}
+set.seed(20201113)
+
+var_stan = 25^2
+cor_stan = matrix(c(1,.7,.7,1),nrow=2)
+Sigma_stan = cor_stan*var_stan
+df_stan = mvrnorm(
+  n = 10,
+  Sigma = Sigma_stan,
+  mu = c(50,25)
+  ) %>% 
+  as.data.frame() %>%
+  rename(pre = V1,
+         post = V2)
+
+#Add a change score column
+df_stan = df_stan %>% mutate(pre = round(pre,2),
+                           post = round(post,2)) %>%
+  mutate(diff = post-pre)
+
+```
+
+```{r echo=FALSE}
+knitr::kable(df_stan, caption="Standardized Differences Data")
+```
+
+# The Simple Analysis
+
+Now we have our data, we can perform a simple *t*-test on the differences scores for both datasets.
+
+```{r ttest1, warning=FALSE, message=FALSE}
+t_raw = t.test(df_raw$diff)
+knitr::kable(tidy(t_raw),caption="Raw Differences t-test",
+             digits = 4)
+
+t_stan = t.test(df_stan$diff)
+knitr::kable(tidy(t_stan),caption="Standardized Differences t-test",
+             digits = 4)
+```
+
+Okay, so we now have our *t*-statistics, *p*-values, mean differences, and confidence intervals. Pretty painless to get this far, but maybe we want (or need) to get the standardized mean difference (SMD) and common langauge effect sizes (CLES).
+
+# Let's Bootstrap
+
+While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate the confidence intervals. Unlike the mean difference, there is no simple formula for calculating the SMD. 
+
+First, we must create a function to caclulate all the SMD statistics we would like to obtain.
+
+```{r functions}
+# function to obtain R-Squared from the data
+SMD <- function(data, indices) {
+  d <- data[indices,] # allows boot to select sample
+  sd_pre = sd(d$pre, na.rm = TRUE)
+  sd_post = sd(d$post, na.rm = TRUE)
+  sd_av = (sd_pre+sd_post)/2
+  m_diff = mean(d$diff, na.rm = TRUE)
+  sd_diff = sd(d$diff, na.rm = TRUE)
+  cor_prepost = cor(d$pre,d$post,
+                    method = "pearson")
+  dz = m_diff/sd_diff
+  dav = m_diff/sd_av
+  glass = m_diff/sd_pre
+  drm = m_diff/sqrt((sd_pre^2+sd_post^2)-(2*cor_prepost*sd_pre*sd_post))*sqrt(2*(1-cor_prepost))
+  CLES = pnorm(dz)
+  result = c(dz,drm,dav,glass,CLES)
+  
+} 
+```
+
+Second, we can start bootstrapping these statistics. In this we select each value based on their index (1-5) from the function above. We must also specify the *type* of bootstrap confidence intervals. In this case, I have decided to report the bias-corrected and accelerated (BCa) intervals as it will likely provide our most accurate estimate.
+
+
+```{r bootstap}
+raw_boot = boot(df_raw, SMD, R = 2000)
+#Extract the values
+dz_raw = boot.ci(raw_boot, type="bca", index=1)
+drm_raw = boot.ci(raw_boot, type="bca", index=2)
+dav_raw = boot.ci(raw_boot, type="bca", index=3)
+glass_raw = boot.ci(raw_boot, type="bca", index=4)
+CLES_raw = boot.ci(raw_boot, type="bca", index=5)
+
+#Repeat for the standardized dataset
+stan_boot = boot(df_stan, SMD, R = 2000)
+dz_stan = boot.ci(stan_boot, type="bca", index=1)
+drm_stan = boot.ci(stan_boot, type="bca", index=2)
+dav_stan = boot.ci(stan_boot, type="bca", index=3)
+glass_stan = boot.ci(stan_boot, type="bca", index=4)
+CLES_stan = boot.ci(stan_boot, type="bca", index=5)
+```
+
+From these statistics we can extract the effect size estimate from bootstrapped values by calling on the `$t0`
+
+For example:
+
+```{r}
+dz_raw$t0
+```
+
+And the upper limit and lower limit of the 95% confidence interval can also be found in the `dz_raw$bca` object. The last and second-to-last numbers representing the upper limit and lower limit of the 95% confidence interval.
+
+```{r}
+dz_raw$bca
+```
+
+Finally, we can put all the SMD calculations in a summary table. Note, that the effect sizes are negative in the 2nd table are negative, that is because there was a decrease from pre-to-post, and the CLES should be reported as $1-CLES$ from the table.
+
+```{r SMD_tab, echo=FALSE, message=FALSE, warning=FALSE}
+names = c("d(z)","d(rm)","d(av)","Glass's Delta", "CLES")
+raw_es = c(dz_raw$t0,drm_raw$t0,dav_raw$t0,glass_raw$t0,CLES_raw$t0)
+stan_es = c(dz_stan$t0,drm_stan$t0,dav_stan$t0,glass_stan$t0,CLES_stan$t0)
+LL_raw = c(dz_raw$bca[4],drm_raw$bca[4],dav_raw$bca[4],glass_raw$bca[4],CLES_raw$bca[4])
+UL_raw = c(dz_raw$bca[5],drm_raw$bca[5],dav_raw$bca[5],glass_raw$bca[5],CLES_raw$bca[5])
+
+LL_stan = c(dz_stan$bca[4],drm_stan$bca[4],dav_stan$bca[4],glass_stan$bca[4],CLES_stan$bca[4])
+UL_stan = c(dz_stan$bca[5],drm_stan$bca[5],dav_stan$bca[5],glass_stan$bca[5],CLES_stan$bca[5])
+
+raw_es = data.frame(names,raw_es,LL_raw,UL_raw) %>%
+  rename("Effect Size"= names,
+         "Estimate" = raw_es,
+         "Lower Limit" = LL_raw,
+         "Upper Limit" = UL_raw)
+stan_es = data.frame(names,stan_es,LL_stan,UL_stan) %>%
+  rename("Effect Size"= names,
+         "Estimate" = stan_es,
+         "Lower Limit" = LL_stan,
+         "Upper Limit" = UL_stan)
+knitr::kable(raw_es, caption = "Effect Sizes for \'Raw\' Differences Dataset",
+             digits = 4)
+
+knitr::kable(stan_es, caption = "Effect Sizes for \'Standardized\' Differences Dataset",
+             digits = 4)
+```
+
+
+\newpage
+
+# References
+
+
