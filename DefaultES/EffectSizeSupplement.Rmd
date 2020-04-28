@@ -113,7 +113,7 @@ Okay, so we now have our *t*-statistics, *p*-values, mean differences, and confi
 
 # Let's Bootstrap
 
-While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate their confidence intervals (CI). Unlike the mean difference, the formulae for the CI of the SMD are convoluted (see @hedges1981). Thus, here, we rely on the bootstrap to generate CIs.
+While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate their confidence intervals (CI). Unlike the mean difference, the formulae for the CI of the SMD are convoluted (see [@hedges1981]). Thus, here, we rely on the bootstrap to generate CIs.
 
 First, we must create a function to caclulate all the SMD statistics we would like to obtain.
 
@@ -159,7 +159,7 @@ glass_stan = boot.ci(stan_boot, type="bca", index=4)
 CLES_stan = boot.ci(stan_boot, type="bca", index=5)
 ```
 
-From these statistics, we can extract the effect size estimate by calling on the `$t0`.
+From these statistics, we can extract the effect size estimate by calling on the `$t0` part of the saved object.
 
 For example:
 
@@ -186,12 +186,12 @@ LL_stan = c(dz_stan$bca[4],drm_stan$bca[4],dav_stan$bca[4],glass_stan$bca[4],CLE
 UL_stan = c(dz_stan$bca[5],drm_stan$bca[5],dav_stan$bca[5],glass_stan$bca[5],CLES_stan$bca[5])
 
 raw_es = data.frame(names,raw_es,LL_raw,UL_raw) %>%
-  rename("Effect Size"= names,
+  rename("Effect Size" = names,
          "Estimate" = raw_es,
          "Lower Limit" = LL_raw,
          "Upper Limit" = UL_raw)
 stan_es = data.frame(names,stan_es,LL_stan,UL_stan) %>%
-  rename("Effect Size"= names,
+  rename("Effect Size" = names,
          "Estimate" = stan_es,
          "Lower Limit" = LL_stan,
          "Upper Limit" = UL_stan)
