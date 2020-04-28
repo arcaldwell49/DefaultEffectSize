@@ -24,11 +24,11 @@ options(htmltools.dir.version = FALSE)
 
 # Introduction
 
-In our manuscript we have argued that sport and exercise scientists should avoid the temptation of reporting a "default" effect size. Instead we suggested that the effect size be chosen on a case-by-case basis and reported in a way that helps communicate the results appropriately. With that said, we realize many sport scientists may not know how to calculate these effect sizes in a efficient manner. Therefore, we have written this document to show how [@R-base] can be used to produce these analyses.
+In our manuscript, we argued that sport and exercise scientists should avoid the temptation of reporting a "default" effect size. Instead, we suggested that the effect size be chosen on a case-by-case basis and reported in a way that facilitates the appropriate communication of study results. With that said, we realize many sport scientists may not know how to calculate these effect sizes in a efficient manner. Therefore, we have written this document to show how [@R-base] can be used for these calculations.
 
 ## Loading the Right Tools
 
-None of the following packages are 'necessary', and all of these analyses can be performed in 'base' R. But, I use these packages to make the analysis pipeline simpler and a little 'cleaner' too. In total, I need the tidyverse [@tidyverse], boot [@boot], broom [@broom], and MASS [@MASS]. You will likely not need MASS or broom for your own analyses, but it is necessary for this document in order to create a simulated dataset (MASS) and make the tables in the document (broom).
+None of the following packages are 'necessary', and all of these analyses can be performed in 'base' `R`. But, I use these packages to make the analysis pipeline simpler and a little 'cleaner' too. In total, I need the `tidyverse` [@tidyverse], `boot` [@boot], `broom` [@broom], and `MASS` [@MASS] packages. You will likely not need `MASS` or `broom` for your own analyses, but it is necessary for this document in order to create a simulated dataset (`MASS`) and make the tables in the document (`broom`).
 
 ```{r message=FALSE, warning=FALSE}
 #LOAD PACKAGES
@@ -40,7 +40,7 @@ library(broom)
 
 # Generate Some Data
 
-Okay, now I can generate data we similar to what we used in the manuscipt. First, let us create the "Interpretatable Raw Differences" example. In this example, we have a pre-to-post design of athletes where we are measuring $\dot{V}O_2$ (L$\cdot$min\textsuperscript{-1}). Further, we assume we are sampling from a population wherein the standard deviation of 0.2, correlation pre/post of .9, and a mean increase of .3 (L$\cdot$min\textsuperscript{-1}).
+Okay, now I can generate data similar to what we used in the manuscipt. First, let us create an "Interpretatable Raw Differences" example. In this example, we have a pre-to-post design of athletes where we are measuring $\dot{V}O_2$ (L$\cdot$min\textsuperscript{-1}). Further, we assume we are sampling from a population with a standard deviation of 0.2, pre-post correlation of 0.9, and a mean increase of 0.3 (L$\cdot$min\textsuperscript{-1}).
 
 ```{r raw-diff-data, warnings=FALSE, message=FALSE}
 set.seed(20200303)
@@ -67,7 +67,7 @@ df_raw = df_raw %>% mutate(pre = round(pre,2),
 knitr::kable(df_raw, caption="Raw Differences Data")
 ```
 
-Now, we want to create "Uninterpretable Raw Differences" dataset. This time we are creating a dummy dataset of VAS scores with 30 'point' reduction, with a standard deviation of 25, and correlation of .7.
+Now, we want to create an "Uninterpretable Raw Differences" dataset. This time we are creating a dummy dataset of VAS scores with 30 'point' reduction, with a standard deviation of 25, and correlation of 0.7.
 
 ```{r stan-diff-data, warnings=FALSE, message=FALSE}
 set.seed(20201113)
@@ -97,7 +97,7 @@ knitr::kable(df_stan, caption="Standardized Differences Data")
 
 # The Simple Analysis
 
-Now we have our data, we can perform a simple *t*-test on the differences scores for both datasets.
+Now that we have our data, we can perform a simple *t*-test on the difference scores for both datasets.
 
 ```{r ttest1, warning=FALSE, message=FALSE}
 t_raw = t.test(df_raw$diff)
@@ -113,7 +113,7 @@ Okay, so we now have our *t*-statistics, *p*-values, mean differences, and confi
 
 # Let's Bootstrap
 
-While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate the confidence intervals. Unlike the mean difference, there is no simple formula for calculating the SMD. 
+While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate their confidence intervals (CI). Unlike the mean difference, the formulae for the CI of the SMD are convoluted (see @hedges1981). Thus, here, we rely on the bootstrap to generate CIs.
 
 First, we must create a function to caclulate all the SMD statistics we would like to obtain.
 
@@ -138,7 +138,7 @@ SMD <- function(data, indices) {
 } 
 ```
 
-Second, we can start bootstrapping these statistics. In this we select each value based on their index (1-5) from the function above. We must also specify the *type* of bootstrap confidence intervals. In this case, I have decided to report the bias-corrected and accelerated (BCa) intervals as it will likely provide our most accurate estimate.
+Second, we can start bootstrapping these statistics. To do so, we select each value based on their index (1-5) from the function above. We must also specify the *type* of bootstrap CI. In this case, I have decided to report the bias-corrected and accelerated (BCa) intervals as they will likely provide our most accurate estimate.
 
 
 ```{r bootstap}
@@ -159,7 +159,7 @@ glass_stan = boot.ci(stan_boot, type="bca", index=4)
 CLES_stan = boot.ci(stan_boot, type="bca", index=5)
 ```
 
-From these statistics we can extract the effect size estimate from bootstrapped values by calling on the `$t0`
+From these statistics, we can extract the effect size estimate by calling on the `$t0`.
 
 For example:
 
@@ -167,13 +167,13 @@ For example:
 dz_raw$t0
 ```
 
-And the upper limit and lower limit of the 95% confidence interval can also be found in the `dz_raw$bca` object. The last and second-to-last numbers representing the upper limit and lower limit of the 95% confidence interval.
+And the upper limit and lower limit of the 95% CI can also be found in the `dz_raw$bca` object. The last and second-to-last numbers represent the upper limit and lower limit of the 95% CI.
 
 ```{r}
 dz_raw$bca
 ```
 
-Finally, we can put all the SMD calculations in a summary table. Note, that the effect sizes are negative in the 2nd table are negative, that is because there was a decrease from pre-to-post, and the CLES should be reported as $1-CLES$ from the table.
+Finally, we can put all of the SMD calculations in a summary table. Note, the effect sizes in the 2nd table are negative; that is because there was a decrease from pre-to-post, and the CLES should be reported as $1-CLES$ from the table.
 
 ```{r SMD_tab, echo=FALSE, message=FALSE, warning=FALSE}
 names = c("d(z)","d(rm)","d(av)","Glass's Delta", "CLES")
