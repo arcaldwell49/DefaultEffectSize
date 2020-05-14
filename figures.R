@@ -40,5 +40,9 @@ ggplot(out.long,
   scale_fill_viridis_c(trans = "log10") +
   labs(y = expression(sigma["pre"]),
        x = "Correlation (ρ)",
-       fill = "Value")
+       fill = "Value") +
+  scale_x_continuous(expand = c(0,0), limits = c(-1,1)) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,10)) +
+  theme_minimal() +
+  theme(panel.spacing = unit(1.5, "lines"))
   
