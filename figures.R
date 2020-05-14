@@ -34,13 +34,15 @@ out.long <- tidyr::gather(out.long, type, value, estimate, variance)
 saveRDS(out.long, "~/Documents/GitHub/DefaultEffectSize/plot_values.rds")
 
 out.long <- readRDS("~/Documents/GitHub/DefaultEffectSize/plot_values.rds")
-ggplot(out.long,
+ggplot(subset(out.long, rho <= 0.95),
        aes(x = rho,
            y = sigma,
            fill = value)) +
   geom_raster() +
   facet_grid(type ~ statistic) +
-  scale_fill_viridis_c(trans = "log10") +
+  scale_fill_gradientn(colors = pals::parula(),
+                       trans = "log10") +
+  #scale_fill_viridis_c(trans = "log10") +
   labs(y = expression(sigma["pre"]),
        x = "Correlation (ρ)",
        fill = "Value") +
