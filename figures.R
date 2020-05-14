@@ -34,7 +34,7 @@ out.long <- tidyr::gather(out.long, type, value, estimate, variance)
 saveRDS(out.long, "~/Documents/GitHub/DefaultEffectSize/plot_values.rds")
 
 out.long <- readRDS("~/Documents/GitHub/DefaultEffectSize/plot_values.rds")
-ggplot(subset(out.long, rho <= 0.95),
+ggplot(out.long,
        aes(x = rho,
            y = sigma,
            fill = value)) +
