@@ -24,7 +24,7 @@ options(htmltools.dir.version = FALSE)
 
 # Introduction
 
-In our manuscript, we argued that sport and exercise scientists should avoid the temptation of reporting a "default" effect size. Instead, we suggested that the effect size be chosen on a case-by-case basis and reported in a way that facilitates the appropriate communication of study results. With that said, we realize many sport scientists may not know how to calculate these effect sizes in a efficient manner. Therefore, we have written this document to show how [@R-base] can be used for these calculations.
+In our manuscript, we argued that sport and exercise scientists should avoid the temptation of reporting a "default" effect size. Instead, we suggested that the effect size be chosen on a case-by-case basis and reported in a way that facilitates the appropriate communication of study results. With that said, we realize many sport scientists may not know how to calculate these effect sizes in a efficient manner. Therefore, we have written this document to show how **R** [@R-base] can be used for these calculations.
 
 ## Loading the Right Tools
 
@@ -113,7 +113,7 @@ Okay, so we now have our *t*-statistics, *p*-values, mean differences, and confi
 
 # Let's Bootstrap
 
-While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate their confidence intervals (CI). Unlike the mean difference, the formulae for the CI of the SMD are convoluted (see [@hedges1981]). Thus, here, we rely on the bootstrap to generate CIs.
+While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate their confidence intervals (CI). Unlike the mean difference, the formulae for the CI of the SMD are convoluted (see @hedges1981). Thus, here, we rely on the bootstrap to generate CIs.^[There are some formula for calculating the standard error, and therefore confidence intervals, of SMDs. Many of these calculations are contained in a review by @Nakagawa_Cuthill_2007. However, the required formula is dependent on the SMD being chosen. For example, the SE calculation differs from Cohen's d and Hedges' g, despite the later being a corrected version of the former. To avoid potential miscalculations, we strongly advocate for the use of bootstrapping methods.]
 
 First, we must create a function to caclulate all the SMD statistics we would like to obtain.
 
