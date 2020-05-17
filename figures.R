@@ -26,7 +26,7 @@ vals <- pbmcapply::pbmclapply(1:nrow(combos), function(x) {
     dz <- mean(dat[,2]-dat[,1])/sd(dat[,2]-dat[,1])
     delta <- mean(dat[,2]-dat[,1])/sd(dat[,1])
     dav <- mean(dat[,2]-dat[,1])/((sd(dat[,1]) + sd(dat[,2])) / 2)
-    drm <- mean(dat[,2]-dat[,1])/(var(dat[,1]) + var(dat[,2]) - 2*rr*sd(dat[,1])*sd(dat[,2])) * sqrt(2*(1-rr))
+    drm <- dz * sqrt(2*(1-rr))
     
     # return SMDs
     cbind(dz = dz,
