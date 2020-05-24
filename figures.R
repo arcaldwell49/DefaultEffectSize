@@ -14,7 +14,7 @@ set.seed(0) # set seed for reproducibility
 vals <- pbmcapply::pbmclapply(1:nrow(combos), function(x) {
   rho <- combos[x,1] # correlation between repeated measures
   sigma_pre <- combos[x,2] # SD_pre
-  Sigma <- matrix(c(1,rho,rho,1), nrow=2)*sigma_pre # create covariance matrix
+  Sigma <- matrix(c(1,rho,rho,1), nrow=2)*sigma_pre^2 # create covariance matrix
   
   # for each combination, run nsim simulations
   out <- sapply(1:nsim, function(i) {
@@ -22,10 +22,13 @@ vals <- pbmcapply::pbmclapply(1:nrow(combos), function(x) {
     dat <- MASS::mvrnorm(20, c(0,1), Sigma)
     rr <- cor(dat[,1],dat[,2]) # observed correlation between repeated measures
     
+    diff <- mean(dat[,2]-dat[,1])
+    sd_pre <- sd(dat[,1])
+    
     # calculate SMDs
-    dz <- mean(dat[,2]-dat[,1])/sd(dat[,2]-dat[,1])
-    delta <- mean(dat[,2]-dat[,1])/sd(dat[,1])
-    dav <- mean(dat[,2]-dat[,1])/((sd(dat[,1]) + sd(dat[,2])) / 2)
+    dz <- diff/sd(dat[,2]-dat[,1])
+    delta <- diff/sd_pre
+    dav <- diff/((sd_pre + sd(dat[,2])) / 2)
     drm <- dz * sqrt(2*(1-rr))
     
     # return SMDs
@@ -65,6 +68,10 @@ out.long$type <- factor(out.long$type,
                                    expression(Delta),
                                    expression(d["av"]),
                                    expression(d["rm"])))
+out.long$statistic <- factor(out.long$statistic,
+                             levels = unique(out.long$statistic),
+                             labels = c(expression(Estimate),
+                                        expression(Standard~Error)))
 
 # plot
 ggplot() +
@@ -80,25 +87,27 @@ ggplot() +
                        guide = guide_colorbar(order = 1,
                                               barwidth = 1)) +
   new_scale_fill() +
-  geom_raster(data = subset(out.long, statistic == "Variance"),
+  geom_raster(data = subset(out.long, statistic == "Standard ~ Error"),
               aes(x = rho,
                   y = sigma,
-                  fill = value)) +
+                  fill = sqrt(value))) +
   scale_fill_gradientn(colors = pals::parula(),
+                       name = "Standard Error",
                        trans = "log10",
-                       name = "Variance",
-                       breaks = c(0.1,10,1000),
-                       labels = c(0.1,10,1000),
+                       #breaks = c(0.1,10,1000),
+                       #labels = c(0.1,10,1000),
                        guide = guide_colorbar(order = 2,
                                               barwidth = 1)) +
   facet_grid(statistic ~ type,
              labeller = label_parsed) +
   labs(y = expression(sigma["pre"]),
        x = expression("Correlation" ~ (rho))) +
-  scale_x_continuous(expand = c(0,0), limits = c(-1,1)) +
-  scale_y_continuous(expand = c(0,0), limits = c(0,10)) +
+  scale_x_continuous(breaks = c(-1,0,1),
+                     limits = c(-1,1)) +
+  scale_y_continuous(limits = c(0,10)) +
   theme_minimal() +
-  theme(panel.spacing = unit(1.5, "lines"))
+  theme(aspect.ratio = 1,
+        panel.grid = element_blank())
 
 ggsave("~/Documents/GitHub/DefaultEffectSize/smd_simulation.pdf",
        width = 10,
