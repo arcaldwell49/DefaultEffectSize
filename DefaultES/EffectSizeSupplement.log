@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2020.5.16)  16 MAY 2020 13:54
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2020.5.16)  26 MAY 2020 10:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -938,7 +938,7 @@ LaTeX Warning: Marginpar on page 4 moved.
 
 Class tufte-handout Warning: Proper spacing of small-caps letters has not been 
 set up.
-This message occurred on input line 371.
+This message occurred on input line 372.
 
 [4]
 Overfull \vbox (3.11087pt too high) has occurred while \output is active []
@@ -946,29 +946,29 @@ Overfull \vbox (3.11087pt too high) has occurred while \output is active []
 
 Class tufte-handout Warning: Proper spacing of small-caps letters has not been 
 set up.
-This message occurred on input line 438.
+This message occurred on input line 439.
 
 [5]
 
 Class tufte-handout Warning: Proper spacing of small-caps letters has not been 
 set up.
-This message occurred on input line 459.
+This message occurred on input line 460.
 
 [6] (./EffectSizeSupplement.bbl)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 466.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 467.
 
 Class tufte-handout Warning: Proper spacing of small-caps letters has not been 
 set up.
-This message occurred on input line 466.
+This message occurred on input line 467.
 
 [7]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 466.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 467.
 (./EffectSizeSupplement.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 466.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 466.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 467.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 467.
 Package rerunfilecheck Info: File `EffectSizeSupplement.out' has not changed.
 (rerunfilecheck)             Checksum: 5A09CD73878DB3BD2447A66E0530BE58;511.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 466.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 467.
  ) 
 Here is how much of TeX's memory you used:
  15945 strings out of 481253
