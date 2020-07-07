@@ -51,7 +51,7 @@ out <- do.call(rbind.data.frame, vals) # list to data frame
 saveRDS(out, "~/Documents/GitHub/DefaultEffectSize/sim_values.rds") # save all
 
 # load all SMDs and aggregate to obtain estimates/variances
-out <- readRDS("~/Documents/GitHub/DefaultEffectSize/sim_values.rds")
+out <- readRDS("~/Documents/GitHub/DefaultEffectSize/plot_values.rds")
 means <- aggregate(cbind(dz,delta,dav,drm) ~ rho + sigma, out, mean)
 vars <- aggregate(cbind(dz,delta,dav,drm) ~ rho + sigma, out, var)
 stacked <- rbind(cbind(means, statistic = "Estimate"),
@@ -73,7 +73,7 @@ out.long$statistic <- factor(out.long$statistic,
                              labels = c(expression(Estimate),
                                         expression(Standard~Error)))
 
-# plot
+# plot -- raster
 ggplot() +
   geom_raster(data = subset(out.long, statistic == "Estimate"),
               aes(x = rho,
@@ -112,3 +112,38 @@ ggplot() +
 ggsave("~/Documents/GitHub/DefaultEffectSize/smd_simulation.pdf",
        width = 10,
        height = 4.5)
+
+#geom_point version
+ggplot() +
+  geom_point(data = subset(out.long, statistic == "Estimate"),
+              aes(x = rho,
+                  y = value,
+                  color = sigma)) +
+  scale_color_viridis_c(name = expression(sigma["pre"]),
+                        trans = "log10",
+                       option = "C",
+                       breaks = c(0.1,1,10,100),
+                       labels = c(0.1,1,10,100),
+                       guide = guide_colorbar(order = 1,
+                                              barwidth = 1)) +
+  geom_point(data = subset(out.long, statistic == "Standard ~ Error"),
+             aes(x = rho,
+                  color = sigma,
+                  y = sqrt(value))) +
+  facet_grid(statistic ~ type,
+             labeller = label_parsed) +
+  labs(y = "",
+       x = expression("Correlation" ~ (rho))) +
+  scale_x_continuous(breaks = c(-1,0,1),
+                     limits = c(-1,1)) +
+  #scale_y_continuous(limits = c(0,10)) +
+  theme_minimal() +
+  theme(aspect.ratio = 1,
+        panel.grid = element_blank())
+
+
+ggsave("D:/GitHub/DefaultEffectSize/smd_simulation_point.pdf",
+       width = 10,
+       height = 4.5)
+
+
