@@ -67,19 +67,23 @@ df_raw = df_raw %>% mutate(pre = round(pre,2),
 knitr::kable(df_raw, caption="Raw Differences Data")
 ```
 
-Now, we want to create an "Uninterpretable Raw Differences" dataset. This time we are creating a dummy dataset of VAS scores with 30 'point' reduction, with a standard deviation of 25, and correlation of 0.7.
+Now, we want to create an "Uninterpretable Raw Differences" dataset. This time we are creating a dummy dataset of VAS scores with 15 'point' reduction and correlation of 0.7. We also have the data generation process come from a log-normal process.
 
 ```{r stan-diff-data, warnings=FALSE, message=FALSE}
 set.seed(20201113)
 
-var_stan = 25^2
-cor_stan = matrix(c(1,.7,.7,1),nrow=2)
-Sigma_stan = cor_stan*var_stan
+v = 13^2
+m = c(50,35)
+phi = sqrt(v + m^2)
+sd_stan = sqrt(log(phi^2/m^2))
+mu_stan = log(m^2/phi)
+cor_stan = matrix(c(1,.7,.7,1),nrow = 2)
+Sigma_stan = (sd_stan %*% t(sd_stan)) * cor_stan
 df_stan = mvrnorm(
   n = 10,
   Sigma = Sigma_stan,
-  mu = c(50,25)
-  ) %>% 
+  mu = mu_stan
+) %>% 
   as.data.frame() %>%
   rename(pre = V1,
          post = V2)
@@ -87,7 +91,7 @@ df_stan = mvrnorm(
 #Add a change score column
 df_stan = df_stan %>% mutate(pre = round(pre,2),
                            post = round(post,2)) %>%
-  mutate(diff = post-pre)
+  mutate(diff = post - pre)
 
 ```
 
