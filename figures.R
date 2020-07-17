@@ -179,8 +179,8 @@ ggplot() +
                      limits = c(-1,1)) +
   #scale_y_continuous(limits = c(0,10)) +
   theme_minimal() +
-  theme(aspect.ratio = 1,
-        panel.grid = element_blank())
+  theme(panel.background = element_rect(fill = "#f9f9f9",color = "#ffffff")) +
+  theme(aspect.ratio = 1)
 
 
 ggsave("D:/GitHub/DefaultEffectSize/smd_simulation_point.pdf",
