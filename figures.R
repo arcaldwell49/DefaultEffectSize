@@ -109,50 +109,12 @@ ggplot() +
   theme(aspect.ratio = 1,
         panel.grid = element_blank())
 
-ggsave("~/Documents/GitHub/DefaultEffectSize/smd_simulation.pdf",
+ggsave("smd_simulation.pdf",
        width = 10,
        height = 4.5)
 
 
-#geom_point version
-
-dz <- function(sigma, rho) {
-  1 / sqrt(2*sigma^2 - 2*rho*sigma^2)
-}
-
-
-glassDelta <- function(sigma) {
-  1 / sigma
-}
-
-
-
-ggplot() +
-  stat_function(data = subset(out.long, statistic == "Estimate"),
-                aes(color = sigma,
-                    x = rho,
-                    y = value),
-                fun = dz
-                args = ) +
-  scale_color_viridis_c(name = expression(sigma["pre"]),
-                        trans = "log10",
-                        option = "C",
-                        breaks = c(0.1,1,10,100),
-                        labels = c(0.1,1,10,100),
-                        guide = guide_colorbar(order = 1,
-                                               barwidth = 1)) +
-  facet_grid(statistic ~ type,
-             labeller = label_parsed) +
-  labs(y = "",
-       x = expression("Correlation" ~ (rho))) +
-  scale_x_continuous(breaks = c(-1,0,1),
-                     limits = c(-1,1)) +
-  #scale_y_continuous(limits = c(0,10)) +
-  theme_minimal() +
-  theme(aspect.ratio = 1,
-        panel.grid = element_blank())
-
-#geom_point version
+#geom_line version version
 ggplot() +
   geom_line(data = subset(out.long, statistic == "Estimate"),
               aes(x = rho,
@@ -165,26 +127,29 @@ ggplot() +
                        breaks = c(0.1,1,10,100),
                        labels = c(0.1,1,10,100),
                        guide = guide_colorbar(order = 1,
-                                              barwidth = 1)) +
+                                              barwidth = 0.5)) +
   geom_line(data = subset(out.long, statistic == "Standard ~ Error"),
              aes(x = rho,
                   color = sigma,
                  group = sigma,
                   y = sqrt(value))) +
   facet_grid(statistic ~ type,
-             labeller = label_parsed) +
+             labeller = label_parsed,
+             scales = "free_y",
+             switch = "y") +
   labs(y = "",
-       x = expression("Correlation" ~ (rho))) +
+       x = expression("Correlation"~(italic(r)))) +
   scale_x_continuous(breaks = c(-1,0,1),
                      limits = c(-1,1)) +
   #scale_y_continuous(limits = c(0,10)) +
   theme_minimal() +
   theme(panel.background = element_rect(fill = "#f9f9f9",color = "#ffffff")) +
-  theme(aspect.ratio = 1)
+  theme(aspect.ratio = 1,
+        strip.placement = "outside")
 
 
-ggsave("D:/GitHub/DefaultEffectSize/smd_simulation_point.pdf",
-       width = 10,
+ggsave("smd_simulation_point.pdf",
+       width = 8,
        height = 4.5)
 
 
