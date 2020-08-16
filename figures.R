@@ -159,36 +159,41 @@ ggsave("smd_simulation_point.pdf",
 
 correct <- function(m) 1 - 3/(4 * m - 1)
 
-closed_form <- pbmcapply::pbmclapply(1:nrow(combos), function(i) {
-  n <- 20
-  sigma <- combos[i,"sigma_pre"]
-  rho <- combos[i,"rho"]
-  dz <- 1/sqrt(2*sigma^2*(1-rho))
-  d_z <- data.frame(sigma = sigma,
-                    rho = rho,
-                    type = 'd["z"]',
-                    Estimate = dz,
-                    Variance = (n-1)/(n*(n-3)) * (1 + dz^2*n) - dz^2/correct(n-1)^2)
-  
-  delta <- 1/sigma
-  delta_pre <- data.frame(sigma = sigma,
-                          rho = rho,
-                          type = 'Delta',
-                          Estimate = delta,
-                          Variance = (n-1)/(n*(n-3)) * (2*(1-rho) + delta^2*n) - delta^2/correct(n-1)^2)
-  rbind(d_z,delta_pre)
-}, mc.cores = parallel::detectCores())
+# Set correlations and SDs for which to calculate SMDs
+rhos <- seq(-0.99,0.99,by=0.01)
+sigma <- pracma::logseq(0.05,10,20) #seq(0.05,10,by=0.05)
+combos <- expand.grid(rhos,sigma)
+colnames(combos) <- c("rho","sigma")
+n <- 20
+dz <- 1/sqrt(2*combos$sigma^2*(1-combos$rho))
+vardz <- (n-1)/(n*(n-3)) * (1 + dz^2*n) - dz^2/correct(n-1)^2
+delta <- 1/combos$sigma
+vardelta <- (n-1)/(n*(n-3)) * (2*(1-combos$rho) + delta^2*n) - delta^2/correct(n-1)^2
 
-closed_form <- do.call(rbind.data.frame, closed_form)
-closed_form.long <- tidyr::gather(closed_form, statistic, value, 4:5)
+closed_form <- rbind(cbind(combos,
+                           data.frame(statistic = "Estimate",
+                                      type = 'd["z"]',
+                                      value = dz)),
+                     cbind(combos,
+                           data.frame(statistic = "Variance",
+                                      type = 'd["z"]',
+                                      value = vardz)),
+                     cbind(combos,
+                           data.frame(statistic = "Estimate",
+                                      type = 'Delta["pre"]',
+                                      value = delta)),
+                     cbind(combos,
+                           data.frame(statistic = "Variance",
+                                      type = 'Delta["pre"]',
+                                      value = vardelta)))
 
-closed_form.long$statistic <- factor(closed_form.long$statistic,
-                                     levels = unique(closed_form.long$statistic),
-                                     labels = c(expression(Estimate),
-                                                expression(Standard~Error)))
+closed_form$statistic <- factor(closed_form$statistic,
+                                levels = unique(closed_form$statistic),
+                                labels = c(expression(Estimate),
+                                           expression(Standard~Error)))
 
 ggplot() +
-  geom_line(data = subset(closed_form.long, statistic == "Estimate"),
+  geom_line(data = subset(closed_form, statistic == "Estimate"),
             aes(x = rho,
                 y = value,
                 color = sigma,
@@ -200,7 +205,7 @@ ggplot() +
                         #labels = c(0.1,1,10,100),
                         guide = guide_colorbar(order = 1,
                                                barwidth = 0.5)) +
-  geom_line(data = subset(closed_form.long, statistic == "Standard ~ Error"),
+  geom_line(data = subset(closed_form, statistic == "Standard ~ Error"),
             aes(x = rho,
                 color = sigma,
                 group = sigma,
@@ -221,6 +226,6 @@ ggplot() +
         strip.placement = "outside")
 
 
-ggsave("smd_simulation_point.pdf",
+ggsave("smd_closed_form.pdf",
        width = 6,
        height = 3)
