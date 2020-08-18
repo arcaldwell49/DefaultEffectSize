@@ -38,7 +38,8 @@ library(MASS)
 library(broom)
 ```
 
-# Generate Some Data
+# Example 1: $\dot{V}O_2$ Data
+## Generate Some Data
 
 Okay, now I can generate data similar to what we used in the manuscipt. First, let us create an "Interpretatable Raw Differences" example. In this example, we have a pre-to-post design of athletes where we are measuring $\dot{V}O_2$ (L$\cdot$min\textsuperscript{-1}). Further, we assume we are sampling from a population with a standard deviation of 0.2, pre-post correlation of 0.9, and a mean increase of 0.3 (L$\cdot$min\textsuperscript{-1}).
 
@@ -67,59 +68,24 @@ df_raw = df_raw %>% mutate(pre = round(pre,2),
 knitr::kable(df_raw, caption="Raw Differences Data")
 ```
 
-Now, we want to create an "Uninterpretable Raw Differences" dataset. This time we are creating a dummy dataset of VAS scores with 15 'point' reduction and correlation of 0.7. We also have the data generation process come from a log-normal process.
+## The Simple Analysis
 
-```{r stan-diff-data, warnings=FALSE, message=FALSE}
-set.seed(20201113)
-
-v = 13^2
-m = c(50,35)
-phi = sqrt(v + m^2)
-sd_stan = sqrt(log(phi^2/m^2))
-mu_stan = log(m^2/phi)
-cor_stan = matrix(c(1,.7,.7,1),nrow = 2)
-Sigma_stan = (sd_stan %*% t(sd_stan)) * cor_stan
-df_stan = mvrnorm(
-  n = 10,
-  Sigma = Sigma_stan,
-  mu = mu_stan
-) %>% 
-  as.data.frame() %>%
-  rename(pre = V1,
-         post = V2)
-
-#Add a change score column
-df_stan = df_stan %>% mutate(pre = round(pre,2),
-                           post = round(post,2)) %>%
-  mutate(diff = post - pre)
-
-```
-
-```{r echo=FALSE}
-knitr::kable(df_stan, caption="Standardized Differences Data")
-```
-
-# The Simple Analysis
-
-Now that we have our data, we can perform a simple *t*-test on the difference scores for both datasets.
+Now that we have our data, we can perform a simple *t*-test on the difference scores.
 
 ```{r ttest1, warning=FALSE, message=FALSE}
 t_raw = t.test(df_raw$diff)
 knitr::kable(tidy(t_raw),caption="Raw Differences t-test",
              digits = 4)
 
-t_stan = t.test(df_stan$diff)
-knitr::kable(tidy(t_stan),caption="Standardized Differences t-test",
-             digits = 4)
 ```
 
 Okay, so we now have our *t*-statistics, *p*-values, mean differences, and confidence intervals. Pretty painless to get this far, but maybe we want (or need) to get the standardized mean difference (SMD) and common langauge effect sizes (CLES).
 
-# Let's Bootstrap
+## Let's Bootstrap
 
 While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate their confidence intervals (CI). Unlike the mean difference, the formulae for the CI of the SMD are convoluted (see @hedges1981). Thus, here, we rely on the bootstrap to generate CIs.^[There are some formula for calculating the standard error, and therefore confidence intervals, of SMDs. Many of these calculations are contained in a review by @Nakagawa_Cuthill_2007. However, the required formula is dependent on the SMD being chosen. For example, the SE calculation differs from Cohen's d and Hedges' g, despite the later being a corrected version of the former. To avoid potential miscalculations, we strongly advocate for the use of bootstrapping methods.]
 
-First, we must create a function to caclulate all the SMD statistics we would like to obtain.
+First, we must create a function to calculate all the SMD statistics we would like to obtain.
 
 ```{r functions}
 # function to obtain R-Squared from the data
@@ -154,13 +120,6 @@ dav_raw = boot.ci(raw_boot, type="bca", index=3)
 glass_raw = boot.ci(raw_boot, type="bca", index=4)
 CLES_raw = boot.ci(raw_boot, type="bca", index=5)
 
-#Repeat for the standardized dataset
-stan_boot = boot(df_stan, SMD, R = 2000)
-dz_stan = boot.ci(stan_boot, type="bca", index=1)
-drm_stan = boot.ci(stan_boot, type="bca", index=2)
-dav_stan = boot.ci(stan_boot, type="bca", index=3)
-glass_stan = boot.ci(stan_boot, type="bca", index=4)
-CLES_stan = boot.ci(stan_boot, type="bca", index=5)
 ```
 
 From these statistics, we can extract the effect size estimate by calling on the `$t0` part of the saved object.
@@ -177,32 +136,154 @@ And the upper limit and lower limit of the 95% CI can also be found in the `dz_r
 dz_raw$bca
 ```
 
-Finally, we can put all of the SMD calculations in a summary table. Note, the effect sizes in the 2nd table are negative; that is because there was a decrease from pre-to-post, and the CLES should be reported as $1-CLES$ from the table.
+Finally, we can put all of the SMD calculations in a summary table.
 
 ```{r SMD_tab, echo=FALSE, message=FALSE, warning=FALSE}
 names = c("d(z)","d(rm)","d(av)","Glass's Delta", "CLES")
 raw_es = c(dz_raw$t0,drm_raw$t0,dav_raw$t0,glass_raw$t0,CLES_raw$t0)
-stan_es = c(dz_stan$t0,drm_stan$t0,dav_stan$t0,glass_stan$t0,CLES_stan$t0)
 LL_raw = c(dz_raw$bca[4],drm_raw$bca[4],dav_raw$bca[4],glass_raw$bca[4],CLES_raw$bca[4])
 UL_raw = c(dz_raw$bca[5],drm_raw$bca[5],dav_raw$bca[5],glass_raw$bca[5],CLES_raw$bca[5])
-
-LL_stan = c(dz_stan$bca[4],drm_stan$bca[4],dav_stan$bca[4],glass_stan$bca[4],CLES_stan$bca[4])
-UL_stan = c(dz_stan$bca[5],drm_stan$bca[5],dav_stan$bca[5],glass_stan$bca[5],CLES_stan$bca[5])
 
 raw_es = data.frame(names,raw_es,LL_raw,UL_raw) %>%
   rename("Effect Size" = names,
          "Estimate" = raw_es,
          "Lower Limit" = LL_raw,
          "Upper Limit" = UL_raw)
+knitr::kable(raw_es, caption = "Effect Sizes for \'Raw\' Differences Dataset",
+             digits = 4)
+```
+
+
+
+
+
+
+# Example 2: VAS Data
+## Generate Some Data
+Now, we want to create an "Uninterpretable Raw Differences" dataset. This time we are creating a dummy dataset of VAS scores with 15 'point' reduction and correlation of 0.7 on the latent scale. Since sensation data are typically distributed log-normal, we will also work with a latent normal distribution.
+
+```{r stan-diff-data, warnings=FALSE, message=FALSE}
+set.seed(20201113)
+
+v = 13^2 # observed variance (log-normal)
+m = c(50,35) # observed means (log-normal)
+phi = sqrt(v + m^2)
+sd_stan = sqrt(log(phi^2/m^2)) # latent SD (normal)
+mu_stan = log(m^2/phi) # latent mean (normal)
+cor_stan = matrix(c(1,.7,.7,1),nrow = 2)
+Sigma_stan = (sd_stan %*% t(sd_stan)) * cor_stan
+
+# Generate latent ratings
+df_stan = mvrnorm(
+  n = 10,
+  Sigma = Sigma_stan,
+  mu = mu_stan
+) %>% 
+  as.data.frame() %>%
+  rename(pre = V1,
+         post = V2)
+
+#Add a change score column
+# Latent perceptions
+df_stan = df_stan %>% mutate(pre = round(pre,2),
+                           post = round(post,2)) %>%
+  mutate(diff = post - pre)
+
+# Observed perceptions (log-normal)
+df_stan_obs = exp(df_stan[,1:2]) %>% 
+  mutate(diff = post - pre)
+
+```
+
+```{r echo=FALSE}
+knitr::kable(df_stan, caption="Log-transformed Difference Data")
+```
+
+## The Simple Analysis
+
+Now that we have our data, we can perform a simple *t*-test on the difference scores, both latent and observed.
+
+```{r ttest2, warning=FALSE, message=FALSE}
+
+t_stan_latent = t.test(df_stan$diff)
+knitr::kable(tidy(t_stan_latent),caption="Log-transformed Differences t-test",
+             digits = 4)
+
+
+t_stan_obs = t.test(df_stan_obs$diff)
+knitr::kable(tidy(t_stan_obs),caption="Observed Differences t-test",
+             digits = 4)
+```
+Since the transformation is nonlinear, the expected difference in the observed data is not a simple transformation of the expected difference of the log-transformed data.
+
+## Let's Bootstrap
+
+Using the same methods and functions as before, we will use the bootstrap to calculate CIs for each of the SMDs and CLES.
+
+
+```{r bootstap2}
+#Repeat for the log-transformed dataset
+stan_boot = boot(df_stan, SMD, R = 2000)
+dz_stan = boot.ci(stan_boot, type="bca", index=1)
+drm_stan = boot.ci(stan_boot, type="bca", index=2)
+dav_stan = boot.ci(stan_boot, type="bca", index=3)
+glass_stan = boot.ci(stan_boot, type="bca", index=4)
+CLES_stan = boot.ci(stan_boot, type="bca", index=5)
+
+
+#Repeat for the observed dataset
+stan_obs_boot = boot(df_stan_obs, SMD, R = 2000)
+dz_stan_obs = boot.ci(stan_obs_boot, type="bca", index=1)
+drm_stan_obs = boot.ci(stan_obs_boot, type="bca", index=2)
+dav_stan_obs = boot.ci(stan_obs_boot, type="bca", index=3)
+glass_stan_obs = boot.ci(stan_obs_boot, type="bca", index=4)
+CLES_stan_obs = boot.ci(stan_obs_boot, type="bca", index=5)
+```
+
+From these statistics, we can extract the effect size estimate by calling on the `$t0` part of the saved object.
+
+For example, if we look at the latent SMD:
+
+```{r}
+dz_stan$t0
+```
+
+And the upper limit and lower limit of the 95% CI can also be found in the `dz_stan$bca` object. The last and second-to-last numbers represent the upper limit and lower limit of the 95% CI.
+
+```{r}
+dz_stan$bca
+```
+
+Finally, we can put all of the SMD calculations in a summary table. Note, the effect sizes in the 2nd table are negative; that is because there was a decrease from pre-to-post, and the CLES should be reported as $1-CLES$ from the table.
+
+```{r SMD_tab2, echo=FALSE, message=FALSE, warning=FALSE}
+names = c("d(z)","d(rm)","d(av)","Glass's Delta", "CLES")
+stan_es = c(dz_stan$t0,drm_stan$t0,dav_stan$t0,glass_stan$t0,CLES_stan$t0)
+
+LL_stan = c(dz_stan$bca[4],drm_stan$bca[4],dav_stan$bca[4],glass_stan$bca[4],CLES_stan$bca[4])
+UL_stan = c(dz_stan$bca[5],drm_stan$bca[5],dav_stan$bca[5],glass_stan$bca[5],CLES_stan$bca[5])
+
 stan_es = data.frame(names,stan_es,LL_stan,UL_stan) %>%
   rename("Effect Size" = names,
          "Estimate" = stan_es,
          "Lower Limit" = LL_stan,
          "Upper Limit" = UL_stan)
-knitr::kable(raw_es, caption = "Effect Sizes for \'Raw\' Differences Dataset",
-             digits = 4)
 
-knitr::kable(stan_es, caption = "Effect Sizes for \'Standardized\' Differences Dataset",
+
+stan_obs_es = c(dz_stan_obs$t0,drm_stan_obs$t0,dav_stan_obs$t0,glass_stan_obs$t0,CLES_stan_obs$t0)
+
+LL_stan_obs = c(dz_stan_obs$bca[4],drm_stan_obs$bca[4],dav_stan_obs$bca[4],glass_stan_obs$bca[4],CLES_stan_obs$bca[4])
+UL_stan_obs = c(dz_stan_obs$bca[5],drm_stan_obs$bca[5],dav_stan_obs$bca[5],glass_stan_obs$bca[5],CLES_stan_obs$bca[5])
+
+stan_obs_es = data.frame(names,stan_obs_es,LL_stan_obs,UL_stan_obs) %>%
+  rename("Effect Size" = names,
+         "Estimate" = stan_obs_es,
+         "Lower Limit" = LL_stan_obs,
+         "Upper Limit" = UL_stan_obs)
+
+knitr::kable(stan_es, caption = "Effect Sizes for Log-transformed Differences",
+             digits = 4)
+knitr::kable(stan_obs_es, caption = "Effect Sizes for Observed Differences",
              digits = 4)
 ```
 

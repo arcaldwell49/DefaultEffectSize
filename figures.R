@@ -116,7 +116,7 @@ ggsave("smd_simulation.pdf",
 
 #geom_line version version
 ggplot() +
-  geom_line(data = subset(out.long, statistic == "Estimate" & type %in% unique(out.long$type)[1:2]),
+  geom_line(data = subset(out.long, statistic == "Estimate" & type %in% unique(out.long$type)),
               aes(x = rho,
                   y = value,
                   color = sigma,
@@ -128,7 +128,7 @@ ggplot() +
                        #labels = c(0.1,1,10,100),
                        guide = guide_colorbar(order = 1,
                                               barwidth = 0.5)) +
-  geom_line(data = subset(out.long, statistic == "Standard ~ Error" & type %in% unique(out.long$type)[1:2]),
+  geom_line(data = subset(out.long, statistic == "Standard ~ Error" & type %in% unique(out.long$type)),
              aes(x = rho,
                   color = sigma,
                  group = sigma,
@@ -145,12 +145,11 @@ ggplot() +
   #scale_y_continuous(limits = c(0,10)) +
   theme_minimal() +
   theme(panel.background = element_rect(fill = "#f9f9f9",color = "#ffffff")) +
-  theme(aspect.ratio = 0.5,
-        strip.placement = "outside")
+  theme(strip.placement = "outside")
 
 
 ggsave("smd_simulation_point.pdf",
-       width = 6,
+       width = 8,
        height = 3)
 
 
