@@ -155,7 +155,7 @@ ggsave("smd_simulation_point.pdf",
 
 
 
-
+library(pracma)
 correct <- function(m) 1 - 3/(4 * m - 1)
 
 # Set correlations and SDs for which to calculate SMDs
@@ -219,10 +219,13 @@ ggplot() +
                      limits = c(-1,1)) +
   scale_y_continuous(trans="log10") +
   #scale_y_continuous(limits = c(0,10)) +
-  theme_minimal() +
-  theme(panel.background = element_rect(fill = "#f9f9f9",color = "#ffffff")) +
+  theme_classic() +
+  #theme(panel.background = element_rect(fill = "#f9f9f9",color = "#ffffff")) +
   theme(aspect.ratio = 0.5,
-        strip.placement = "outside")
+        strip.placement = "outside",
+        strip.background = element_rect(fill="white",color="white"),
+        strip.text = element_text(face = "bold",
+                                  size = 13))
 
 
 ggsave("smd_closed_form.pdf",
