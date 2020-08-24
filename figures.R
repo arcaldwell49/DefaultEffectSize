@@ -224,15 +224,13 @@ ggplot() +
   theme(aspect.ratio = 0.5,
         strip.placement = "outside",
         strip.background = element_rect(fill="white",color="white"),
-        strip.text = element_text(face = "bold",
-                                  size = 12),
-        axis.title.x = element_text(face = "bold",
-                                    size = 12),
-        legend.title = element_text(face = "bold",
-                                    size = 12),
-        panel.border = element_rect(fill = NA,color = "lightgrey"))
+        strip.text = element_text(size = 12),
+        axis.title.x = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(fill = NA,
+                                    color = "lightgrey"))
 
 
 ggsave("smd_closed_form.pdf",
-       width = 6,
-       height = 3)
+       width = 7.5,
+       height = 4)
