@@ -1,0 +1,600 @@
+\documentclass[]{tufte-handout}
+
+% ams
+\usepackage{amssymb,amsmath}
+
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \makeatletter
+  \@ifpackageloaded{fontspec}{}{\usepackage{fontspec}}
+  \makeatother
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+  \makeatletter
+  \@ifpackageloaded{soul}{
+     \renewcommand\allcapsspacing[1]{{\addfontfeature{LetterSpace=15}#1}}
+     \renewcommand\smallcapsspacing[1]{{\addfontfeature{LetterSpace=10}#1}}
+   }{}
+  \makeatother
+
+\fi
+
+% graphix
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,totalheight=\textheight,keepaspectratio}
+
+% booktabs
+\usepackage{booktabs}
+
+% url
+\usepackage{url}
+
+% hyperref
+\usepackage{hyperref}
+
+% units.
+\usepackage{units}
+
+
+\setcounter{secnumdepth}{-1}
+
+% citations
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+% pandoc syntax highlighting
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+
+% longtable
+\usepackage{longtable,booktabs}
+
+% multiplecol
+\usepackage{multicol}
+
+% strikeout
+\usepackage[normalem]{ulem}
+
+% morefloats
+\usepackage{morefloats}
+
+
+% tightlist macro required by pandoc >= 1.14
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% title / author / date
+\title{How to Calculate and Report Effect Sizes}
+\author{Aaron R. Caldwell}
+\date{2020-10-26}
+
+
+\begin{document}
+
+\maketitle
+
+
+
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+In our manuscript, we argued that sport and exercise scientists should
+avoid the temptation of reporting a ``default'' effect size. Instead, we
+suggested that the effect size be chosen on a case-by-case basis and
+reported in a way that facilitates the appropriate communication of
+study results. With that said, we realize many sport scientists may not
+know how to calculate these effect sizes in a efficient manner.
+Therefore, we have written this document to show how \textbf{R}
+\citep{R-base} can be used for these calculations.
+
+\hypertarget{loading-the-right-tools}{%
+\subsection{Loading the Right Tools}\label{loading-the-right-tools}}
+
+None of the following packages are `necessary', and all of these
+analyses can be performed in `base' \texttt{R}. But, I use these
+packages to make the analysis pipeline simpler and a little `cleaner'
+too. In total, I need the \texttt{tidyverse} \citep{tidyverse},
+\texttt{boot} \citep{boot}, \texttt{broom} \citep{broom}, and
+\texttt{MASS} \citep{MASS} packages. You will likely not need
+\texttt{MASS} or \texttt{broom} for your own analyses, but it is
+necessary for this document in order to create a simulated dataset
+(\texttt{MASS}) and make the tables in the document (\texttt{broom}).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#LOAD PACKAGES}
+\KeywordTok{library}\NormalTok{(tidyverse) }
+\KeywordTok{library}\NormalTok{(boot) }
+\KeywordTok{library}\NormalTok{(MASS) }
+\KeywordTok{library}\NormalTok{(broom)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{example-1-dotvo_2-data}{%
+\section{\texorpdfstring{Example 1: \(\dot{V}O_2\)
+Data}{Example 1: \textbackslash dot\{V\}O\_2 Data}}\label{example-1-dotvo_2-data}}
+
+\hypertarget{generate-some-data}{%
+\subsection{Generate Some Data}\label{generate-some-data}}
+
+Okay, now I can generate data \emph{similar} to what we used in the
+manuscipt. First, let us create an ``Interpretatable Raw Differences''
+example. In this example, we have a pre-to-post design of athletes where
+we are measuring \(\dot{V}O_2\) (L\(\cdot\)min\textsuperscript{-1}).
+Further, we assume we are sampling from a population with a standard
+deviation of 0.2, pre-post correlation of 0.9, and a mean increase of
+0.3 (L\(\cdot\)min\textsuperscript{-1}).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{20200303}\NormalTok{)}
+\NormalTok{var_raw =}\StringTok{ }\FloatTok{.2}\OperatorTok{^}\DecValTok{2}
+\NormalTok{cor_raw =}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,.}\DecValTok{8}\NormalTok{,.}\DecValTok{8}\NormalTok{,}\DecValTok{1}\NormalTok{),}\DataTypeTok{nrow=}\DecValTok{2}\NormalTok{)}
+\NormalTok{Sigma_raw =}\StringTok{ }\NormalTok{cor_raw}\OperatorTok{*}\NormalTok{var_raw}
+\NormalTok{df_raw =}\StringTok{ }\KeywordTok{mvrnorm}\NormalTok{(}
+  \DataTypeTok{n =} \DecValTok{10}\NormalTok{,}
+  \DataTypeTok{Sigma =}\NormalTok{ Sigma_raw,}
+  \DataTypeTok{mu =} \KeywordTok{c}\NormalTok{(}\FloatTok{3.9}\NormalTok{, }\FloatTok{4.1}\NormalTok{)}
+\NormalTok{  ) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{as.data.frame}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rename}\NormalTok{(}\DataTypeTok{pre =}\NormalTok{ V1,}
+         \DataTypeTok{post =}\NormalTok{ V2)}
+
+\CommentTok{#Add a change score column}
+\NormalTok{df_raw =}\StringTok{ }\NormalTok{df_raw }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pre =} \KeywordTok{round}\NormalTok{(pre,}\DecValTok{2}\NormalTok{),}
+                           \DataTypeTok{post =} \KeywordTok{round}\NormalTok{(post,}\DecValTok{2}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{diff =}\NormalTok{ post}\OperatorTok{-}\NormalTok{pre)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrr@{}}
+\caption{Raw Differences Data}\tabularnewline
+\toprule
+pre & post & diff\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+pre & post & diff\tabularnewline
+\midrule
+\endhead
+3.85 & 4.15 & 0.30\tabularnewline
+3.75 & 4.11 & 0.36\tabularnewline
+4.03 & 4.14 & 0.11\tabularnewline
+3.95 & 4.08 & 0.13\tabularnewline
+4.22 & 4.40 & 0.18\tabularnewline
+4.20 & 4.11 & -0.09\tabularnewline
+3.74 & 3.99 & 0.25\tabularnewline
+4.13 & 4.17 & 0.04\tabularnewline
+3.98 & 4.05 & 0.07\tabularnewline
+4.05 & 4.20 & 0.15\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{the-simple-analysis}{%
+\subsection{The Simple Analysis}\label{the-simple-analysis}}
+
+Now that we have our data, we can perform a simple \emph{t}-test on the
+difference scores.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{t_raw =}\StringTok{ }\KeywordTok{t.test}\NormalTok{(df_raw}\OperatorTok{$}\NormalTok{diff)}
+\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\KeywordTok{tidy}\NormalTok{(t_raw),}\DataTypeTok{caption=}\StringTok{"Raw Differences t-test"}\NormalTok{,}
+             \DataTypeTok{digits =} \DecValTok{4}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrrrll@{}}
+\caption{Raw Differences t-test}\tabularnewline
+\toprule
+estimate & statistic & p.value & parameter & conf.low & conf.high &
+method & alternative\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+estimate & statistic & p.value & parameter & conf.low & conf.high &
+method & alternative\tabularnewline
+\midrule
+\endhead
+0.15 & 3.6075 & 0.0057 & 9 & 0.0559 & 0.2441 & One Sample t-test &
+two.sided\tabularnewline
+\bottomrule
+\end{longtable}
+
+Okay, so we now have our \emph{t}-statistics, \emph{p}-values, mean
+differences, and confidence intervals. Pretty painless to get this far,
+but maybe we want (or need) to get the standardized mean difference
+(SMD) and common langauge effect sizes (CLES).
+
+\hypertarget{lets-bootstrap}{%
+\subsection{Let's Bootstrap}\label{lets-bootstrap}}
+
+While it is easy to calculate the SMD or CLES in R, it is quite another
+thing to calculate their confidence intervals (CI). Unlike the mean
+difference, the formulae for the CI of the SMD are convoluted (see
+\citet{hedges1981}). Thus, here, we rely on the bootstrap to generate
+CIs.\footnote{There are some formula for calculating the standard error,
+  and therefore confidence intervals, of SMDs. Many of these
+  calculations are contained in a review by
+  \citet{Nakagawa_Cuthill_2007}. However, the required formula is
+  dependent on the SMD being chosen. For example, the SE calculation
+  differs from Cohen's d and Hedges' g, despite the later being a
+  corrected version of the former. To avoid potential miscalculations,
+  we strongly advocate for the use of bootstrapping methods.}
+
+First, we must create a function to calculate all the SMD statistics we
+would like to obtain.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# function to obtain R-Squared from the data}
+\NormalTok{SMD <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data, indices) \{}
+\NormalTok{  d <-}\StringTok{ }\NormalTok{data[indices,] }\CommentTok{# allows boot to select sample}
+\NormalTok{  sd_pre =}\StringTok{ }\KeywordTok{sd}\NormalTok{(d}\OperatorTok{$}\NormalTok{pre, }\DataTypeTok{na.rm =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{  sd_post =}\StringTok{ }\KeywordTok{sd}\NormalTok{(d}\OperatorTok{$}\NormalTok{post, }\DataTypeTok{na.rm =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{  sd_av =}\StringTok{ }\NormalTok{(sd_pre}\OperatorTok{+}\NormalTok{sd_post)}\OperatorTok{/}\DecValTok{2}
+\NormalTok{  m_diff =}\StringTok{ }\KeywordTok{mean}\NormalTok{(d}\OperatorTok{$}\NormalTok{diff, }\DataTypeTok{na.rm =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{  sd_diff =}\StringTok{ }\KeywordTok{sd}\NormalTok{(d}\OperatorTok{$}\NormalTok{diff, }\DataTypeTok{na.rm =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{  cor_prepost =}\StringTok{ }\KeywordTok{cor}\NormalTok{(d}\OperatorTok{$}\NormalTok{pre,d}\OperatorTok{$}\NormalTok{post,}
+                    \DataTypeTok{method =} \StringTok{"pearson"}\NormalTok{)}
+\NormalTok{  dz =}\StringTok{ }\NormalTok{m_diff}\OperatorTok{/}\NormalTok{sd_diff}
+\NormalTok{  dav =}\StringTok{ }\NormalTok{m_diff}\OperatorTok{/}\NormalTok{sd_av}
+\NormalTok{  glass =}\StringTok{ }\NormalTok{m_diff}\OperatorTok{/}\NormalTok{sd_pre}
+\NormalTok{  drm =}\StringTok{ }\NormalTok{m_diff}\OperatorTok{/}\KeywordTok{sqrt}\NormalTok{((sd_pre}\OperatorTok{^}\DecValTok{2}\OperatorTok{+}\NormalTok{sd_post}\OperatorTok{^}\DecValTok{2}\NormalTok{)}\OperatorTok{-}\NormalTok{(}\DecValTok{2}\OperatorTok{*}\NormalTok{cor_prepost}\OperatorTok{*}\NormalTok{sd_pre}\OperatorTok{*}\NormalTok{sd_post))}\OperatorTok{*}\KeywordTok{sqrt}\NormalTok{(}\DecValTok{2}\OperatorTok{*}\NormalTok{(}\DecValTok{1}\OperatorTok{-}\NormalTok{cor_prepost))}
+\NormalTok{  CLES =}\StringTok{ }\KeywordTok{pnorm}\NormalTok{(dz)}
+\NormalTok{  result =}\StringTok{ }\KeywordTok{c}\NormalTok{(dz,drm,dav,glass,CLES)}
+  
+\NormalTok{\} }
+\end{Highlighting}
+\end{Shaded}
+
+Second, we can start bootstrapping these statistics. To do so, we select
+each value based on their index (1-5) from the function above. We must
+also specify the \emph{type} of bootstrap CI. In this case, I have
+decided to report the bias-corrected and accelerated (BCa) intervals as
+they will likely provide our most accurate estimate.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{raw_boot =}\StringTok{ }\KeywordTok{boot}\NormalTok{(df_raw, SMD, }\DataTypeTok{R =} \DecValTok{2000}\NormalTok{)}
+\CommentTok{#Extract the values}
+\NormalTok{dz_raw =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(raw_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{1}\NormalTok{)}
+\NormalTok{drm_raw =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(raw_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{2}\NormalTok{)}
+\NormalTok{dav_raw =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(raw_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{3}\NormalTok{)}
+\NormalTok{glass_raw =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(raw_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{4}\NormalTok{)}
+\NormalTok{CLES_raw =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(raw_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+From these statistics, we can extract the effect size estimate by
+calling on the \texttt{\$t0} part of the saved object.
+
+For example:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dz_raw}\OperatorTok{$}\NormalTok{t0}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1.140795
+\end{verbatim}
+
+And the upper limit and lower limit of the 95\% CI can also be found in
+the \texttt{dz\_raw\$bca} object. The last and second-to-last numbers
+represent the upper limit and lower limit of the 95\% CI.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dz_raw}\OperatorTok{$}\NormalTok{bca}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      conf                                
+## [1,] 0.95 3.44 1806.43 0.1956553 1.991893
+\end{verbatim}
+
+Finally, we can put all of the SMD calculations in a summary table.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\caption{Effect Sizes for `Raw' Differences Dataset}\tabularnewline
+\toprule
+Effect Size & Estimate & Lower Limit & Upper Limit\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Effect Size & Estimate & Lower Limit & Upper Limit\tabularnewline
+\midrule
+\endhead
+d(z) & 1.1408 & 0.1957 & 1.9919\tabularnewline
+d(rm) & 0.9688 & 0.3886 & 1.5554\tabularnewline
+d(av) & 1.0689 & 0.4172 & 1.8032\tabularnewline
+Glass's Delta & 0.8771 & 0.2360 & 1.2969\tabularnewline
+CLES & 0.8730 & 0.5714 & 0.9753\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{example-2-vas-data}{%
+\section{Example 2: VAS Data}\label{example-2-vas-data}}
+
+\hypertarget{generate-some-data-1}{%
+\subsection{Generate Some Data}\label{generate-some-data-1}}
+
+Now, we want to create an ``Uninterpretable Raw Differences'' dataset.
+This time we are creating a dummy dataset of VAS scores with 15 `point'
+reduction and correlation of 0.7 on the latent scale. Since sensation
+data are typically distributed log-normal, we will also work with a
+latent normal distribution.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{20201113}\NormalTok{)}
+
+\NormalTok{v =}\StringTok{ }\DecValTok{13}\OperatorTok{^}\DecValTok{2} \CommentTok{# observed variance (log-normal)}
+\NormalTok{m =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{50}\NormalTok{,}\DecValTok{35}\NormalTok{) }\CommentTok{# observed means (log-normal)}
+\NormalTok{phi =}\StringTok{ }\KeywordTok{sqrt}\NormalTok{(v }\OperatorTok{+}\StringTok{ }\NormalTok{m}\OperatorTok{^}\DecValTok{2}\NormalTok{)}
+\NormalTok{sd_stan =}\StringTok{ }\KeywordTok{sqrt}\NormalTok{(}\KeywordTok{log}\NormalTok{(phi}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{m}\OperatorTok{^}\DecValTok{2}\NormalTok{)) }\CommentTok{# latent SD (normal)}
+\NormalTok{mu_stan =}\StringTok{ }\KeywordTok{log}\NormalTok{(m}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{phi) }\CommentTok{# latent mean (normal)}
+\NormalTok{cor_stan =}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,.}\DecValTok{7}\NormalTok{,.}\DecValTok{7}\NormalTok{,}\DecValTok{1}\NormalTok{),}\DataTypeTok{nrow =} \DecValTok{2}\NormalTok{)}
+\NormalTok{Sigma_stan =}\StringTok{ }\NormalTok{(sd_stan }\OperatorTok{%*%}\StringTok{ }\KeywordTok{t}\NormalTok{(sd_stan)) }\OperatorTok{*}\StringTok{ }\NormalTok{cor_stan}
+
+\CommentTok{# Generate latent ratings}
+\NormalTok{df_stan =}\StringTok{ }\KeywordTok{mvrnorm}\NormalTok{(}
+  \DataTypeTok{n =} \DecValTok{10}\NormalTok{,}
+  \DataTypeTok{Sigma =}\NormalTok{ Sigma_stan,}
+  \DataTypeTok{mu =}\NormalTok{ mu_stan}
+\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{as.data.frame}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rename}\NormalTok{(}\DataTypeTok{pre =}\NormalTok{ V1,}
+         \DataTypeTok{post =}\NormalTok{ V2)}
+
+\CommentTok{#Add a change score column}
+\CommentTok{# Latent perceptions}
+\NormalTok{df_stan =}\StringTok{ }\NormalTok{df_stan }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pre =} \KeywordTok{round}\NormalTok{(pre,}\DecValTok{2}\NormalTok{),}
+                           \DataTypeTok{post =} \KeywordTok{round}\NormalTok{(post,}\DecValTok{2}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{diff =}\NormalTok{ post }\OperatorTok{-}\StringTok{ }\NormalTok{pre)}
+
+\CommentTok{# Observed perceptions (log-normal)}
+\NormalTok{df_stan_obs =}\StringTok{ }\KeywordTok{exp}\NormalTok{(df_stan[,}\DecValTok{1}\OperatorTok{:}\DecValTok{2}\NormalTok{]) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{diff =}\NormalTok{ post }\OperatorTok{-}\StringTok{ }\NormalTok{pre)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrr@{}}
+\caption{Log-transformed Difference Data}\tabularnewline
+\toprule
+pre & post & diff\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+pre & post & diff\tabularnewline
+\midrule
+\endhead
+3.52 & 2.93 & -0.59\tabularnewline
+3.83 & 3.34 & -0.49\tabularnewline
+3.50 & 3.53 & 0.03\tabularnewline
+4.14 & 3.60 & -0.54\tabularnewline
+3.56 & 2.97 & -0.59\tabularnewline
+3.99 & 3.23 & -0.76\tabularnewline
+3.71 & 2.83 & -0.88\tabularnewline
+4.01 & 3.49 & -0.52\tabularnewline
+3.74 & 3.38 & -0.36\tabularnewline
+4.09 & 3.43 & -0.66\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{the-simple-analysis-1}{%
+\subsection{The Simple Analysis}\label{the-simple-analysis-1}}
+
+Now that we have our data, we can perform a simple \emph{t}-test on the
+difference scores, both latent and observed.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{t_stan_latent =}\StringTok{ }\KeywordTok{t.test}\NormalTok{(df_stan}\OperatorTok{$}\NormalTok{diff)}
+\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\KeywordTok{tidy}\NormalTok{(t_stan_latent),}\DataTypeTok{caption=}\StringTok{"Log-transformed Differences t-test"}\NormalTok{,}
+             \DataTypeTok{digits =} \DecValTok{4}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrrrll@{}}
+\caption{Log-transformed Differences t-test}\tabularnewline
+\toprule
+estimate & statistic & p.value & parameter & conf.low & conf.high &
+method & alternative\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+estimate & statistic & p.value & parameter & conf.low & conf.high &
+method & alternative\tabularnewline
+\midrule
+\endhead
+-0.536 & -6.8978 & 1e-04 & 9 & -0.7118 & -0.3602 & One Sample t-test &
+two.sided\tabularnewline
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{t_stan_obs =}\StringTok{ }\KeywordTok{t.test}\NormalTok{(df_stan_obs}\OperatorTok{$}\NormalTok{diff)}
+\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\KeywordTok{tidy}\NormalTok{(t_stan_obs),}\DataTypeTok{caption=}\StringTok{"Observed Differences t-test"}\NormalTok{,}
+             \DataTypeTok{digits =} \DecValTok{4}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrrrll@{}}
+\caption{Observed Differences t-test}\tabularnewline
+\toprule
+estimate & statistic & p.value & parameter & conf.low & conf.high &
+method & alternative\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+estimate & statistic & p.value & parameter & conf.low & conf.high &
+method & alternative\tabularnewline
+\midrule
+\endhead
+-19.0403 & -6.6056 & 1e-04 & 9 & -25.5608 & -12.5197 & One Sample t-test
+& two.sided\tabularnewline
+\bottomrule
+\end{longtable}
+
+Since the transformation is nonlinear, the expected difference in the
+observed data is not a simple transformation of the expected difference
+of the log-transformed data.
+
+\hypertarget{lets-bootstrap-1}{%
+\subsection{Let's Bootstrap}\label{lets-bootstrap-1}}
+
+Using the same methods and functions as before, we will use the
+bootstrap to calculate CIs for each of the SMDs and CLES.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Repeat for the log-transformed dataset}
+\NormalTok{stan_boot =}\StringTok{ }\KeywordTok{boot}\NormalTok{(df_stan, SMD, }\DataTypeTok{R =} \DecValTok{2000}\NormalTok{)}
+\NormalTok{dz_stan =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{1}\NormalTok{)}
+\NormalTok{drm_stan =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{2}\NormalTok{)}
+\NormalTok{dav_stan =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{3}\NormalTok{)}
+\NormalTok{glass_stan =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{4}\NormalTok{)}
+\NormalTok{CLES_stan =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in norm.inter(t, adj.alpha): extreme order statistics used as endpoints
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Repeat for the observed dataset}
+\NormalTok{stan_obs_boot =}\StringTok{ }\KeywordTok{boot}\NormalTok{(df_stan_obs, SMD, }\DataTypeTok{R =} \DecValTok{2000}\NormalTok{)}
+\NormalTok{dz_stan_obs =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_obs_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{1}\NormalTok{)}
+\NormalTok{drm_stan_obs =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_obs_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{2}\NormalTok{)}
+\NormalTok{dav_stan_obs =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_obs_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{3}\NormalTok{)}
+\NormalTok{glass_stan_obs =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_obs_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{4}\NormalTok{)}
+\NormalTok{CLES_stan_obs =}\StringTok{ }\KeywordTok{boot.ci}\NormalTok{(stan_obs_boot, }\DataTypeTok{type=}\StringTok{"bca"}\NormalTok{, }\DataTypeTok{index=}\DecValTok{5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+From these statistics, we can extract the effect size estimate by
+calling on the \texttt{\$t0} part of the saved object.
+
+For example, if we look at the latent SMD:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dz_stan}\OperatorTok{$}\NormalTok{t0}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] -2.181274
+\end{verbatim}
+
+And the upper limit and lower limit of the 95\% CI can also be found in
+the \texttt{dz\_stan\$bca} object. The last and second-to-last numbers
+represent the upper limit and lower limit of the 95\% CI.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dz_stan}\OperatorTok{$}\NormalTok{bca}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      conf                                    
+## [1,] 0.95 253.93 1999.86 -4.571156 -0.8416896
+\end{verbatim}
+
+Finally, we can put all of the SMD calculations in a summary table.
+Note, the effect sizes in the 2nd table are negative; that is because
+there was a decrease from pre-to-post, and the CLES should be reported
+as \(1-CLES\) from the table.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\caption{Effect Sizes for Log-transformed Differences}\tabularnewline
+\toprule
+Effect Size & Estimate & Lower Limit & Upper Limit\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Effect Size & Estimate & Lower Limit & Upper Limit\tabularnewline
+\midrule
+\endhead
+d(z) & -2.1813 & -4.5712 & -0.8417\tabularnewline
+d(rm) & -2.0781 & -2.7957 & -1.3713\tabularnewline
+d(av) & -2.0925 & -2.7204 & -1.2903\tabularnewline
+Glass's Delta & -2.2349 & -3.1933 & -1.2703\tabularnewline
+CLES & 0.0146 & 0.0000 & 0.2070\tabularnewline
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[]{@{}lrrr@{}}
+\caption{Effect Sizes for Observed Differences}\tabularnewline
+\toprule
+Effect Size & Estimate & Lower Limit & Upper Limit\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Effect Size & Estimate & Lower Limit & Upper Limit\tabularnewline
+\midrule
+\endhead
+d(z) & -2.0889 & -3.8253 & -0.8166\tabularnewline
+d(rm) & -1.9477 & -3.0301 & -1.2459\tabularnewline
+d(av) & -2.1265 & -2.9616 & -1.3368\tabularnewline
+Glass's Delta & -1.7276 & -2.3951 & -1.0051\tabularnewline
+CLES & 0.0184 & 0.0001 & 0.2142\tabularnewline
+\bottomrule
+\end{longtable}
+
+\newpage
+
+\renewcommand\refname{References}
+\bibliography{refs.bib}
+
+
+
+\end{document}

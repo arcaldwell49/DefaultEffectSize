@@ -41,7 +41,7 @@ library(broom)
 # Example 1: $\dot{V}O_2$ Data
 ## Generate Some Data
 
-Okay, now I can generate data similar to what we used in the manuscipt. First, let us create an "Interpretatable Raw Differences" example. In this example, we have a pre-to-post design of athletes where we are measuring $\dot{V}O_2$ (L$\cdot$min\textsuperscript{-1}). Further, we assume we are sampling from a population with a standard deviation of 0.2, pre-post correlation of 0.9, and a mean increase of 0.3 (L$\cdot$min\textsuperscript{-1}).
+Okay, now I can generate data *similar* to what we used in the manuscipt. First, let us create an "Interpretatable Raw Differences" example. In this example, we have a pre-to-post design of athletes where we are measuring $\dot{V}O_2$ (L$\cdot$min\textsuperscript{-1}). Further, we assume we are sampling from a population with a standard deviation of 0.2, pre-post correlation of 0.9, and a mean increase of 0.3 (L$\cdot$min\textsuperscript{-1}).
 
 ```{r raw-diff-data, warnings=FALSE, message=FALSE}
 set.seed(20200303)

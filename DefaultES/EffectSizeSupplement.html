@@ -12,7 +12,7 @@
 
 <meta name="author" content="Aaron R. Caldwell" />
 
-<meta name="date" content="2020-03-02" />
+<meta name="date" content="2020-10-26" />
 
 <title>How to Calculate and Report Effect Sizes</title>
 
@@ -170,6 +170,7 @@ hr { margin-left: 0; }
 table table, li p, li pre { width: auto; }
 li p, li pre {margin-top: auto; }
 div.fullwidth, table.fullwidth { max-width: 90%; }
+div.fullwidth > * { width: auto; }
 #TOC, h1.title { max-width: 90%; }
 #TOC ol, #TOC ul { width: auto; }
 div.fullwidth p.caption {
@@ -269,32 +270,511 @@ if (window.hljs) {
 <h1 class="title toc-ignore">How to Calculate and Report Effect Sizes</h1>
 <h3 class="subtitle">An implementation in R</h3>
 <h4 class="author">Aaron R. Caldwell</h4>
-<h4 class="date">2020-03-02</h4>
+<h4 class="date">2020-10-26</h4>
 
 
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>In our manuscript we have argued that sport and exercise scientists should avoid the temptation of reporting a “default” effect size. Instead we suggested that the effect size be chosen on a case-by-case basis and reported in a way that helps communicate the results appropriately. With that said, we realize many sport scientists may not know how to calculate these effect sizes in a efficient manner. Therefore, we have written this document to show how <span class="citation">(R Core Team <label for="tufte-mn-1" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-1" class="margin-toggle">2019<span class="marginnote">R Core Team. 2019. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.</span>)</span> can be used to produce these analyses.</p>
-<div id="what-r-packages-do-we-need" class="section level2">
-<h2>What R Packages Do We Need?</h2>
-<p>None of the following packages are ‘necessary’, and all of these analyses can be performed in ‘base’ R. But, I use these packages to make the analysis pipeline simpler and a little ‘cleaner’ too.</p>
-<pre class="r"><code>library(tidyverse) #This loads a few packages that make the data management process a tad easier</code></pre>
-<pre><code>## -- Attaching packages ---------------------------------------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
-<pre><code>## v ggplot2 3.2.1     v purrr   0.3.3
-## v tibble  2.1.3     v dplyr   0.8.4
-## v tidyr   1.0.2     v stringr 1.4.0
-## v readr   1.3.1     v forcats 0.4.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------------------------------------------------------- tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>library(boot) #This package makes the bootstrapping process a easier
-library(MASS) #This package is needed to create our &#39;fake&#39; dataset</code></pre>
-<pre><code>## 
-## Attaching package: &#39;MASS&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     select</code></pre>
+<p>In our manuscript, we argued that sport and exercise scientists should avoid the temptation of reporting a “default” effect size. Instead, we suggested that the effect size be chosen on a case-by-case basis and reported in a way that facilitates the appropriate communication of study results. With that said, we realize many sport scientists may not know how to calculate these effect sizes in a efficient manner. Therefore, we have written this document to show how <strong>R</strong> <span class="citation">(R Core Team <label for="tufte-mn-1" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-1" class="margin-toggle">2019<span class="marginnote">R Core Team. 2019. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.</span>)</span> can be used for these calculations.</p>
+<div id="loading-the-right-tools" class="section level2">
+<h2>Loading the Right Tools</h2>
+<p>None of the following packages are ‘necessary’, and all of these analyses can be performed in ‘base’ <code>R</code>. But, I use these packages to make the analysis pipeline simpler and a little ‘cleaner’ too. In total, I need the <code>tidyverse</code> <span class="citation">(Wickham et al. <label for="tufte-mn-2" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-2" class="margin-toggle">2019<span class="marginnote">Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019. “Welcome to the tidyverse.” <em>Journal of Open Source Software</em> 4 (43): 1686. <a href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.</span>)</span>, <code>boot</code> <span class="citation">(Canty and Ripley <label for="tufte-mn-3" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-3" class="margin-toggle">2019<span class="marginnote">Canty, Angelo, and B. D. Ripley. 2019. <em>Boot: Bootstrap R (S-Plus) Functions</em>.</span>)</span>, <code>broom</code> <span class="citation">(Robinson and Hayes <label for="tufte-mn-4" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-4" class="margin-toggle">2019<span class="marginnote">Robinson, David, and Alex Hayes. 2019. <em>Broom: Convert Statistical Analysis Objects into Tidy Tibbles</em>. <a href="https://CRAN.R-project.org/package=broom">https://CRAN.R-project.org/package=broom</a>.</span>)</span>, and <code>MASS</code> <span class="citation">(Venables and Ripley <label for="tufte-mn-5" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-5" class="margin-toggle">2002<span class="marginnote">Venables, W. N., and B. D. Ripley. 2002. <em>Modern Applied Statistics with S</em>. Fourth. New York: Springer. <a href="http://www.stats.ox.ac.uk/pub/MASS4">http://www.stats.ox.ac.uk/pub/MASS4</a>.</span>)</span> packages. You will likely not need <code>MASS</code> or <code>broom</code> for your own analyses, but it is necessary for this document in order to create a simulated dataset (<code>MASS</code>) and make the tables in the document (<code>broom</code>).</p>
+<pre class="r"><code>#LOAD PACKAGES
+library(tidyverse) 
+library(boot) 
+library(MASS) 
+library(broom)</code></pre>
+</div>
+</div>
+<div id="example-1-dotvo_2-data" class="section level1">
+<h1>Example 1: <span class="math inline">\(\dot{V}O_2\)</span> Data</h1>
+<div id="generate-some-data" class="section level2">
+<h2>Generate Some Data</h2>
+<p>Okay, now I can generate data <em>similar</em> to what we used in the manuscipt. First, let us create an “Interpretatable Raw Differences” example. In this example, we have a pre-to-post design of athletes where we are measuring <span class="math inline">\(\dot{V}O_2\)</span> (L<span class="math inline">\(\cdot\)</span>min). Further, we assume we are sampling from a population with a standard deviation of 0.2, pre-post correlation of 0.9, and a mean increase of 0.3 (L<span class="math inline">\(\cdot\)</span>min).</p>
+<pre class="r"><code>set.seed(20200303)
+var_raw = .2^2
+cor_raw = matrix(c(1,.8,.8,1),nrow=2)
+Sigma_raw = cor_raw*var_raw
+df_raw = mvrnorm(
+  n = 10,
+  Sigma = Sigma_raw,
+  mu = c(3.9, 4.1)
+  ) %&gt;% 
+  as.data.frame() %&gt;%
+  rename(pre = V1,
+         post = V2)
+
+#Add a change score column
+df_raw = df_raw %&gt;% mutate(pre = round(pre,2),
+                           post = round(post,2)) %&gt;%
+  mutate(diff = post-pre)</code></pre>
+<p><!--
+<caption>--><span class="marginnote shownote">Raw Differences Data</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">pre</th>
+<th align="right">post</th>
+<th align="right">diff</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">3.85</td>
+<td align="right">4.15</td>
+<td align="right">0.30</td>
+</tr>
+<tr class="even">
+<td align="right">3.75</td>
+<td align="right">4.11</td>
+<td align="right">0.36</td>
+</tr>
+<tr class="odd">
+<td align="right">4.03</td>
+<td align="right">4.14</td>
+<td align="right">0.11</td>
+</tr>
+<tr class="even">
+<td align="right">3.95</td>
+<td align="right">4.08</td>
+<td align="right">0.13</td>
+</tr>
+<tr class="odd">
+<td align="right">4.22</td>
+<td align="right">4.40</td>
+<td align="right">0.18</td>
+</tr>
+<tr class="even">
+<td align="right">4.20</td>
+<td align="right">4.11</td>
+<td align="right">-0.09</td>
+</tr>
+<tr class="odd">
+<td align="right">3.74</td>
+<td align="right">3.99</td>
+<td align="right">0.25</td>
+</tr>
+<tr class="even">
+<td align="right">4.13</td>
+<td align="right">4.17</td>
+<td align="right">0.04</td>
+</tr>
+<tr class="odd">
+<td align="right">3.98</td>
+<td align="right">4.05</td>
+<td align="right">0.07</td>
+</tr>
+<tr class="even">
+<td align="right">4.05</td>
+<td align="right">4.20</td>
+<td align="right">0.15</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="the-simple-analysis" class="section level2">
+<h2>The Simple Analysis</h2>
+<p>Now that we have our data, we can perform a simple <em>t</em>-test on the difference scores.</p>
+<pre class="r"><code>t_raw = t.test(df_raw$diff)
+knitr::kable(tidy(t_raw),caption=&quot;Raw Differences t-test&quot;,
+             digits = 4)</code></pre>
+<p><!--
+<caption>--><span class="marginnote shownote">Raw Differences t-test</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">estimate</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+<th align="right">parameter</th>
+<th align="right">conf.low</th>
+<th align="right">conf.high</th>
+<th align="left">method</th>
+<th align="left">alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.15</td>
+<td align="right">3.6075</td>
+<td align="right">0.0057</td>
+<td align="right">9</td>
+<td align="right">0.0559</td>
+<td align="right">0.2441</td>
+<td align="left">One Sample t-test</td>
+<td align="left">two.sided</td>
+</tr>
+</tbody>
+</table>
+<p>Okay, so we now have our <em>t</em>-statistics, <em>p</em>-values, mean differences, and confidence intervals. Pretty painless to get this far, but maybe we want (or need) to get the standardized mean difference (SMD) and common langauge effect sizes (CLES).</p>
+</div>
+<div id="lets-bootstrap" class="section level2">
+<h2>Let’s Bootstrap</h2>
+<p>While it is easy to calculate the SMD or CLES in R, it is quite another thing to calculate their confidence intervals (CI). Unlike the mean difference, the formulae for the CI of the SMD are convoluted (see <span class="citation">Hedges (<label for="tufte-mn-6" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-6" class="margin-toggle">1981<span class="marginnote">Hedges, Larry V. 1981. “Distribution Theory for Glasss Estimator of Effect Size and Related Estimators.” <em>Journal of Educational Statistics</em> 6 (2): 107–28. <a href="https://doi.org/10.3102/10769986006002107">https://doi.org/10.3102/10769986006002107</a>.</span>)</span>). Thus, here, we rely on the bootstrap to generate CIs.<label for="tufte-sn-1" class="margin-toggle sidenote-number">1</label><input type="checkbox" id="tufte-sn-1" class="margin-toggle"><span class="sidenote"><span class="sidenote-number">1</span> There are some formula for calculating the standard error, and therefore confidence intervals, of SMDs. Many of these calculations are contained in a review by <span class="citation">Nakagawa and Cuthill (<label for="tufte-mn-7" class="margin-toggle">&#8853;</label><input type="checkbox" id="tufte-mn-7" class="margin-toggle">2007<span class="marginnote">Nakagawa, Shinichi, and Innes C. Cuthill. 2007. “Effect Size, Confidence Interval and Statistical Significance: A Practical Guide for Biologists.” <em>Biological Reviews</em> 82 (4): 591–605. <a href="https://doi.org/10.1111/j.1469-185x.2007.00027.x">https://doi.org/10.1111/j.1469-185x.2007.00027.x</a>.</span>)</span>. However, the required formula is dependent on the SMD being chosen. For example, the SE calculation differs from Cohen’s d and Hedges’ g, despite the later being a corrected version of the former. To avoid potential miscalculations, we strongly advocate for the use of bootstrapping methods.</span></p>
+<p>First, we must create a function to calculate all the SMD statistics we would like to obtain.</p>
+<pre class="r"><code># function to obtain R-Squared from the data
+SMD &lt;- function(data, indices) {
+  d &lt;- data[indices,] # allows boot to select sample
+  sd_pre = sd(d$pre, na.rm = TRUE)
+  sd_post = sd(d$post, na.rm = TRUE)
+  sd_av = (sd_pre+sd_post)/2
+  m_diff = mean(d$diff, na.rm = TRUE)
+  sd_diff = sd(d$diff, na.rm = TRUE)
+  cor_prepost = cor(d$pre,d$post,
+                    method = &quot;pearson&quot;)
+  dz = m_diff/sd_diff
+  dav = m_diff/sd_av
+  glass = m_diff/sd_pre
+  drm = m_diff/sqrt((sd_pre^2+sd_post^2)-(2*cor_prepost*sd_pre*sd_post))*sqrt(2*(1-cor_prepost))
+  CLES = pnorm(dz)
+  result = c(dz,drm,dav,glass,CLES)
+  
+} </code></pre>
+<p>Second, we can start bootstrapping these statistics. To do so, we select each value based on their index (1-5) from the function above. We must also specify the <em>type</em> of bootstrap CI. In this case, I have decided to report the bias-corrected and accelerated (BCa) intervals as they will likely provide our most accurate estimate.</p>
+<pre class="r"><code>raw_boot = boot(df_raw, SMD, R = 2000)
+#Extract the values
+dz_raw = boot.ci(raw_boot, type=&quot;bca&quot;, index=1)
+drm_raw = boot.ci(raw_boot, type=&quot;bca&quot;, index=2)
+dav_raw = boot.ci(raw_boot, type=&quot;bca&quot;, index=3)
+glass_raw = boot.ci(raw_boot, type=&quot;bca&quot;, index=4)
+CLES_raw = boot.ci(raw_boot, type=&quot;bca&quot;, index=5)</code></pre>
+<p>From these statistics, we can extract the effect size estimate by calling on the <code>$t0</code> part of the saved object.</p>
+<p>For example:</p>
+<pre class="r"><code>dz_raw$t0</code></pre>
+<pre><code>## [1] 1.140795</code></pre>
+<p>And the upper limit and lower limit of the 95% CI can also be found in the <code>dz_raw$bca</code> object. The last and second-to-last numbers represent the upper limit and lower limit of the 95% CI.</p>
+<pre class="r"><code>dz_raw$bca</code></pre>
+<pre><code>##      conf                                
+## [1,] 0.95 3.44 1806.43 0.1956553 1.991893</code></pre>
+<p>Finally, we can put all of the SMD calculations in a summary table.</p>
+<p><!--
+<caption>--><span class="marginnote shownote">Effect Sizes for ‘Raw’ Differences Dataset</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Effect Size</th>
+<th align="right">Estimate</th>
+<th align="right">Lower Limit</th>
+<th align="right">Upper Limit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">d(z)</td>
+<td align="right">1.1408</td>
+<td align="right">0.1957</td>
+<td align="right">1.9919</td>
+</tr>
+<tr class="even">
+<td align="left">d(rm)</td>
+<td align="right">0.9688</td>
+<td align="right">0.3886</td>
+<td align="right">1.5554</td>
+</tr>
+<tr class="odd">
+<td align="left">d(av)</td>
+<td align="right">1.0689</td>
+<td align="right">0.4172</td>
+<td align="right">1.8032</td>
+</tr>
+<tr class="even">
+<td align="left">Glass’s Delta</td>
+<td align="right">0.8771</td>
+<td align="right">0.2360</td>
+<td align="right">1.2969</td>
+</tr>
+<tr class="odd">
+<td align="left">CLES</td>
+<td align="right">0.8730</td>
+<td align="right">0.5714</td>
+<td align="right">0.9753</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="example-2-vas-data" class="section level1">
+<h1>Example 2: VAS Data</h1>
+<div id="generate-some-data-1" class="section level2">
+<h2>Generate Some Data</h2>
+<p>Now, we want to create an “Uninterpretable Raw Differences” dataset. This time we are creating a dummy dataset of VAS scores with 15 ‘point’ reduction and correlation of 0.7 on the latent scale. Since sensation data are typically distributed log-normal, we will also work with a latent normal distribution.</p>
+<pre class="r"><code>set.seed(20201113)
+
+v = 13^2 # observed variance (log-normal)
+m = c(50,35) # observed means (log-normal)
+phi = sqrt(v + m^2)
+sd_stan = sqrt(log(phi^2/m^2)) # latent SD (normal)
+mu_stan = log(m^2/phi) # latent mean (normal)
+cor_stan = matrix(c(1,.7,.7,1),nrow = 2)
+Sigma_stan = (sd_stan %*% t(sd_stan)) * cor_stan
+
+# Generate latent ratings
+df_stan = mvrnorm(
+  n = 10,
+  Sigma = Sigma_stan,
+  mu = mu_stan
+) %&gt;% 
+  as.data.frame() %&gt;%
+  rename(pre = V1,
+         post = V2)
+
+#Add a change score column
+# Latent perceptions
+df_stan = df_stan %&gt;% mutate(pre = round(pre,2),
+                           post = round(post,2)) %&gt;%
+  mutate(diff = post - pre)
+
+# Observed perceptions (log-normal)
+df_stan_obs = exp(df_stan[,1:2]) %&gt;% 
+  mutate(diff = post - pre)</code></pre>
+<p><!--
+<caption>--><span class="marginnote shownote">Log-transformed Difference Data</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">pre</th>
+<th align="right">post</th>
+<th align="right">diff</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">3.52</td>
+<td align="right">2.93</td>
+<td align="right">-0.59</td>
+</tr>
+<tr class="even">
+<td align="right">3.83</td>
+<td align="right">3.34</td>
+<td align="right">-0.49</td>
+</tr>
+<tr class="odd">
+<td align="right">3.50</td>
+<td align="right">3.53</td>
+<td align="right">0.03</td>
+</tr>
+<tr class="even">
+<td align="right">4.14</td>
+<td align="right">3.60</td>
+<td align="right">-0.54</td>
+</tr>
+<tr class="odd">
+<td align="right">3.56</td>
+<td align="right">2.97</td>
+<td align="right">-0.59</td>
+</tr>
+<tr class="even">
+<td align="right">3.99</td>
+<td align="right">3.23</td>
+<td align="right">-0.76</td>
+</tr>
+<tr class="odd">
+<td align="right">3.71</td>
+<td align="right">2.83</td>
+<td align="right">-0.88</td>
+</tr>
+<tr class="even">
+<td align="right">4.01</td>
+<td align="right">3.49</td>
+<td align="right">-0.52</td>
+</tr>
+<tr class="odd">
+<td align="right">3.74</td>
+<td align="right">3.38</td>
+<td align="right">-0.36</td>
+</tr>
+<tr class="even">
+<td align="right">4.09</td>
+<td align="right">3.43</td>
+<td align="right">-0.66</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="the-simple-analysis-1" class="section level2">
+<h2>The Simple Analysis</h2>
+<p>Now that we have our data, we can perform a simple <em>t</em>-test on the difference scores, both latent and observed.</p>
+<pre class="r"><code>t_stan_latent = t.test(df_stan$diff)
+knitr::kable(tidy(t_stan_latent),caption=&quot;Log-transformed Differences t-test&quot;,
+             digits = 4)</code></pre>
+<p><!--
+<caption>--><span class="marginnote shownote">Log-transformed Differences t-test</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">estimate</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+<th align="right">parameter</th>
+<th align="right">conf.low</th>
+<th align="right">conf.high</th>
+<th align="left">method</th>
+<th align="left">alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">-0.536</td>
+<td align="right">-6.8978</td>
+<td align="right">1e-04</td>
+<td align="right">9</td>
+<td align="right">-0.7118</td>
+<td align="right">-0.3602</td>
+<td align="left">One Sample t-test</td>
+<td align="left">two.sided</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>t_stan_obs = t.test(df_stan_obs$diff)
+knitr::kable(tidy(t_stan_obs),caption=&quot;Observed Differences t-test&quot;,
+             digits = 4)</code></pre>
+<p><!--
+<caption>--><span class="marginnote shownote">Observed Differences t-test</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">estimate</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+<th align="right">parameter</th>
+<th align="right">conf.low</th>
+<th align="right">conf.high</th>
+<th align="left">method</th>
+<th align="left">alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">-19.0403</td>
+<td align="right">-6.6056</td>
+<td align="right">1e-04</td>
+<td align="right">9</td>
+<td align="right">-25.5608</td>
+<td align="right">-12.5197</td>
+<td align="left">One Sample t-test</td>
+<td align="left">two.sided</td>
+</tr>
+</tbody>
+</table>
+<p>Since the transformation is nonlinear, the expected difference in the observed data is not a simple transformation of the expected difference of the log-transformed data.</p>
+</div>
+<div id="lets-bootstrap-1" class="section level2">
+<h2>Let’s Bootstrap</h2>
+<p>Using the same methods and functions as before, we will use the bootstrap to calculate CIs for each of the SMDs and CLES.</p>
+<pre class="r"><code>#Repeat for the log-transformed dataset
+stan_boot = boot(df_stan, SMD, R = 2000)
+dz_stan = boot.ci(stan_boot, type=&quot;bca&quot;, index=1)
+drm_stan = boot.ci(stan_boot, type=&quot;bca&quot;, index=2)
+dav_stan = boot.ci(stan_boot, type=&quot;bca&quot;, index=3)
+glass_stan = boot.ci(stan_boot, type=&quot;bca&quot;, index=4)
+CLES_stan = boot.ci(stan_boot, type=&quot;bca&quot;, index=5)</code></pre>
+<pre><code>## Warning in norm.inter(t, adj.alpha): extreme order statistics used as endpoints</code></pre>
+<pre class="r"><code>#Repeat for the observed dataset
+stan_obs_boot = boot(df_stan_obs, SMD, R = 2000)
+dz_stan_obs = boot.ci(stan_obs_boot, type=&quot;bca&quot;, index=1)
+drm_stan_obs = boot.ci(stan_obs_boot, type=&quot;bca&quot;, index=2)
+dav_stan_obs = boot.ci(stan_obs_boot, type=&quot;bca&quot;, index=3)
+glass_stan_obs = boot.ci(stan_obs_boot, type=&quot;bca&quot;, index=4)
+CLES_stan_obs = boot.ci(stan_obs_boot, type=&quot;bca&quot;, index=5)</code></pre>
+<p>From these statistics, we can extract the effect size estimate by calling on the <code>$t0</code> part of the saved object.</p>
+<p>For example, if we look at the latent SMD:</p>
+<pre class="r"><code>dz_stan$t0</code></pre>
+<pre><code>## [1] -2.181274</code></pre>
+<p>And the upper limit and lower limit of the 95% CI can also be found in the <code>dz_stan$bca</code> object. The last and second-to-last numbers represent the upper limit and lower limit of the 95% CI.</p>
+<pre class="r"><code>dz_stan$bca</code></pre>
+<pre><code>##      conf                                    
+## [1,] 0.95 253.93 1999.86 -4.571156 -0.8416896</code></pre>
+<p>Finally, we can put all of the SMD calculations in a summary table. Note, the effect sizes in the 2nd table are negative; that is because there was a decrease from pre-to-post, and the CLES should be reported as <span class="math inline">\(1-CLES\)</span> from the table.</p>
+<p><!--
+<caption>--><span class="marginnote shownote">Effect Sizes for Log-transformed Differences</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Effect Size</th>
+<th align="right">Estimate</th>
+<th align="right">Lower Limit</th>
+<th align="right">Upper Limit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">d(z)</td>
+<td align="right">-2.1813</td>
+<td align="right">-4.5712</td>
+<td align="right">-0.8417</td>
+</tr>
+<tr class="even">
+<td align="left">d(rm)</td>
+<td align="right">-2.0781</td>
+<td align="right">-2.7957</td>
+<td align="right">-1.3713</td>
+</tr>
+<tr class="odd">
+<td align="left">d(av)</td>
+<td align="right">-2.0925</td>
+<td align="right">-2.7204</td>
+<td align="right">-1.2903</td>
+</tr>
+<tr class="even">
+<td align="left">Glass’s Delta</td>
+<td align="right">-2.2349</td>
+<td align="right">-3.1933</td>
+<td align="right">-1.2703</td>
+</tr>
+<tr class="odd">
+<td align="left">CLES</td>
+<td align="right">0.0146</td>
+<td align="right">0.0000</td>
+<td align="right">0.2070</td>
+</tr>
+</tbody>
+</table>
+<p><!--
+<caption>--><span class="marginnote shownote">Effect Sizes for Observed Differences</span><!--</caption>--></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Effect Size</th>
+<th align="right">Estimate</th>
+<th align="right">Lower Limit</th>
+<th align="right">Upper Limit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">d(z)</td>
+<td align="right">-2.0889</td>
+<td align="right">-3.8253</td>
+<td align="right">-0.8166</td>
+</tr>
+<tr class="even">
+<td align="left">d(rm)</td>
+<td align="right">-1.9477</td>
+<td align="right">-3.0301</td>
+<td align="right">-1.2459</td>
+</tr>
+<tr class="odd">
+<td align="left">d(av)</td>
+<td align="right">-2.1265</td>
+<td align="right">-2.9616</td>
+<td align="right">-1.3368</td>
+</tr>
+<tr class="even">
+<td align="left">Glass’s Delta</td>
+<td align="right">-1.7276</td>
+<td align="right">-2.3951</td>
+<td align="right">-1.0051</td>
+</tr>
+<tr class="odd">
+<td align="left">CLES</td>
+<td align="right">0.0184</td>
+<td align="right">0.0001</td>
+<td align="right">0.2142</td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
